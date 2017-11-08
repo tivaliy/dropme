@@ -2,7 +2,10 @@
 #    Copyright 2017 Vitalii Kulanov
 #
 
+import abc
+
 from cliff import command
+from cliff import show
 
 from .. import client
 
@@ -18,3 +21,13 @@ class BaseCommand(command.Command):
     def stdout(self):
         """Shortcut for self.app.stdout."""
         return self.app.stdout
+
+
+class BaseShowCommand(show.ShowOne, BaseCommand):
+    """Shows detailed information about the entity."""
+
+    @property
+    @abc.abstractmethod
+    def columns(self):
+        """Names of columns in the resulting table."""
+        pass

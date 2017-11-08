@@ -2,41 +2,62 @@
 #    Copyright 2017 Vitalii Kulanov
 #
 
-from cliff import show
-
-from .base import BaseCommand
+from .base import BaseShowCommand
 from ..common import utils
 
 
-class AccountOwnerShow(show.ShowOne, BaseCommand):
+class AccountOwnerShow(BaseShowCommand):
+    """
+    Shows information about the current user's account.
+    """
 
-    columns = ('User', 'e-mail', 'Country')
+    columns = ('user', 'e-mail', 'country')
+
+    def get_parser(self, prog_name):
+        parser = super(AccountOwnerShow, self).get_parser(prog_name)
+        parser.add_argument(
+            '-a',
+            '--all',
+            action='store_true',
+            help='Show information about account in more details.'
+        )
+        return parser
 
     def take_action(self, parsed_args):
         response = self.client.users_get_current_account()
         data = {
-            'User': response.name.display_name,
-            'e-mail': response.email,
-            'Country': response.country
+            'user': response.name.display_name,
+            'e_mail': response.email,
+            'country': response.country,
         }
+        if parsed_args.all:
+            # TODO(vkulanov) Add more results
+            self.columns += ('account_id', 'team', 'team_member_id')
+            data['account_id'] = response.account_id
+            data['team'] = response.team
+            data['team_member_id'] = response.team_member_id
         data = utils.get_display_data_single(self.columns, data)
         return self.columns, data
 
 
-class AccountOwnerSpaceUsageShow(show.ShowOne, BaseCommand):
+class AccountOwnerSpaceUsageShow(BaseShowCommand):
+    """
+    Shows information about space usage for the current user's account.
+    """
 
-    columns = ('Allocated', 'Used', 'Available')
+    columns = ('allocated', 'used', 'available')
 
     def take_action(self, parsed_args):
         response = self.client.users_get_space_usage()
+
         allocated = response.allocation.get_individual().allocated
         used = response.used
         available = allocated - used
         data = {
-            'Allocated': utils.convert_size(allocated),
-            'Used': '{} ({:.3}%)'.format(utils.convert_size(used),
+            'allocated': utils.convert_size(allocated),
+            'used': '{} ({:.3}%)'.format(utils.convert_size(used),
                                          available * 100 / allocated),
-            'Available': utils.convert_size(available),
+            'available': utils.convert_size(available),
         }
         data = utils.get_display_data_single(self.columns, data)
         return self.columns, data

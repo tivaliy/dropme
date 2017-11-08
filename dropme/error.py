@@ -12,9 +12,14 @@ class ClientException(Exception):
 
 
 class ConfigNotFoundException(ClientException):
-    """Should be raised if configuration for dropme client is not specified."""
+    """
+    Should be raised if configuration for dropme client is not specified.
+    """
     pass
 
 
 class InvalidFileException(ClientException):
-    """Should be raised when some problems while working with file occurred."""
+    """
+    Should be raised when some problems while working with file occurred.
+    """
+    pass
