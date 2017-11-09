@@ -39,8 +39,8 @@ setup(
             'dropme = dropme.app:main',
         ],
         'dropme': [
-            'whoami=dropme.commands.account:AccountOwnerShow',
-            'df=dropme.commands.account:AccountOwnerSpaceUsageShow'
+            'df=dropme.commands.account:AccountOwnerSpaceUsageShow',
+            'whoami=dropme.commands.account:AccountOwnerInfoShow'
         ],
     },
 )

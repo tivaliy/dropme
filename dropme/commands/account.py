@@ -6,15 +6,15 @@ from .base import BaseShowCommand
 from ..common import utils
 
 
-class AccountOwnerShow(BaseShowCommand):
+class AccountOwnerInfoShow(BaseShowCommand):
     """
     Shows information about the current user's account.
     """
 
-    columns = ('user', 'e-mail', 'country')
+    columns = ('user', 'e_mail', 'country')
 
     def get_parser(self, prog_name):
-        parser = super(AccountOwnerShow, self).get_parser(prog_name)
+        parser = super(AccountOwnerInfoShow, self).get_parser(prog_name)
         parser.add_argument(
             '-a',
             '--all',
