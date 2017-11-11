@@ -11,7 +11,10 @@ from .common import utils
 
 
 def get_client(token=None):
-    return dropbox.Dropbox(token or get_settings()['token'])
+    token = token or get_settings().get('token')
+    if not token:
+        raise ValueError("Token not found.")
+    return dropbox.Dropbox(token)
 
 
 def get_settings(file_path=None):
@@ -40,11 +43,12 @@ def get_settings(file_path=None):
             config_path = user_config
 
     if config_path is None:
-        raise error.ConfigNotFoundException("Configuration not found.")
+        raise error.ConfigNotFoundException("Configuration 'settings.yaml' "
+                                            "file not found.")
 
     try:
         config_data = utils.read_yaml_file(config_path)
     except (OSError, IOError):
-        msg = "Could not read settings from {0}".format(file_path)
+        msg = "Could not read settings from {0}.".format(file_path)
         raise error.InvalidFileException(msg)
     return config_data

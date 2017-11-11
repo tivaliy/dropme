@@ -14,7 +14,7 @@ def read_yaml_file(file_path):
     """
 
     with open(file_path, 'r') as stream:
-        data = yaml.safe_load(stream)
+        data = yaml.safe_load(stream) or {}
     return data
 
 
