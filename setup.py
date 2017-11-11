@@ -1,10 +1,6 @@
 from os import path
 
-try:
-    from setuptools import setup
-except ImportError:
-    from distutils.core import setup
-
+from setuptools import setup, find_packages
 # Get the long description from the README file
 with open(path.join(path.abspath(path.dirname(__file__)), 'README.md')) as f:
     long_description = f.read()
@@ -33,7 +29,7 @@ setup(
     license='MIT',
     classifiers=classifiers,
     keywords='CLI Dropbox',
-    packages=['dropme'],
+    packages=find_packages(exclude=['tests']),
     entry_points={
         'console_scripts': [
             'dropme = dropme.app:main',
