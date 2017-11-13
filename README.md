@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/tivaliy/dropme.svg?branch=master)](https://travis-ci.org/tivaliy/dropme)
+
 # dropme
 CLI tool to manage data in Dropbox workspace
 

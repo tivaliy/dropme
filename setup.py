@@ -1,8 +1,11 @@
-from os import path
+import os
+import io
 
 from setuptools import setup, find_packages
 # Get the long description from the README file
-with open(path.join(path.abspath(path.dirname(__file__)), 'README.md')) as f:
+here = os.path.dirname(__file__)
+
+with io.open(os.path.join(here, 'README.md'), 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 classifiers = [
