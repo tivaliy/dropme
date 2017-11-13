@@ -16,13 +16,9 @@ class BaseCLITest(object):
     """
 
     @pytest.fixture
-    def mock_dropbox(self, mocker):
-        m_client = mocker.patch('dropme.client.dropbox.Dropbox')
-        return m_client
-
-    @pytest.fixture
-    def mock_client(self, mock_dropbox):
-        return mock_dropbox.return_value
+    def mock_client(self, mocker):
+        m_client = mocker.patch('dropme.client.get_client')
+        return m_client.return_value
 
     @staticmethod
     def exec_command(command=''):
