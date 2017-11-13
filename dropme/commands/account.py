@@ -42,7 +42,7 @@ class AccountOwnerInfoShow(BaseShowCommand):
 
 class AccountOwnerSpaceUsageShow(BaseShowCommand):
     """
-    Shows information about space usage for the current user's account.
+    Shows information about space usage of the current user's account.
     """
 
     columns = ('allocated', 'used', 'available')
