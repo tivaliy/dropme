@@ -30,4 +30,3 @@ class BaseShowCommand(show.ShowOne, BaseCommand):
     @abc.abstractmethod
     def columns(self):
         """Names of columns in the resulting table."""
-        pass
