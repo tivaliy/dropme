@@ -26,11 +26,10 @@ def test_get_client_wo_token_fail(mocker):
 
 
 def test_get_settings_from_non_existing_file_fail(mocker):
-    m_path_join = mocker.patch('dropme.client.os.path.join')
-    m_path_join.side_effect = ['/home/fake_user/.config/dropme/settings.yaml',
+    m_path = mocker.patch('dropme.client.os.path')
+    m_path.join.side_effect = ['/home/fake_user/.config/dropme/settings.yaml',
                                'some/fake/path/to/settings.yaml']
-    m_isfile = mocker.patch('dropme.client.os.path.isfile')
-    m_isfile.side_effect = [False, False]
+    m_path.isfile.side_effect = [False, False]
     with pytest.raises(error.ConfigNotFoundException) as excinfo:
         client.get_settings()
     assert "file not found." in str(excinfo.value)
@@ -43,22 +42,20 @@ def test_get_settings_from_non_existing_file_fail(mocker):
 ])
 def test_get_settings_from_file(mocker, file_path, side_effect):
     settings = {'token': 'F0ssXxcSj23fdFskFGsiDSJbJkHwk942'}
-    m_path_join = mocker.patch('dropme.client.os.path.join')
-    m_path_join.side_effect = ['/home/fake_user/.config/dropme/settings.yaml',
+    m_path = mocker.patch('dropme.client.os.path')
+    m_path.join.side_effect = ['/home/fake_user/.config/dropme/settings.yaml',
                                'some/fake/path/to/settings.yaml']
-    m_isfile = mocker.patch('dropme.client.os.path.isfile')
-    m_isfile.side_effect = side_effect
+    m_path.isfile.side_effect = side_effect
     m_open = mocker.mock_open(read_data=yaml.safe_dump(settings))
     mocker.patch('dropme.common.utils.open', m_open)
     assert settings == client.get_settings(file_path=file_path)
 
 
 def test_get_settings_from_bad_file_format_fail(mocker):
-    m_path_join = mocker.patch('dropme.client.os.path.join')
-    m_path_join.side_effect = ['/home/fake_user/.config/dropme/settings.yaml',
+    m_path = mocker.patch('dropme.client.os.path')
+    m_path.join.side_effect = ['/home/fake_user/.config/dropme/settings.yaml',
                                'some/fake/path/to/settings.yaml']
-    m_isfile = mocker.patch('dropme.client.os.path.isfile')
-    m_isfile.side_effect = [True, False]
+    m_path.isfile.side_effect = [True, False]
     m_open = mocker.mock_open()
     m_open.side_effect = IOError
     mocker.patch('dropme.common.utils.open', m_open)
