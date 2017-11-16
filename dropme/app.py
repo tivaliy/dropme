@@ -36,7 +36,7 @@ def main(argv=sys.argv[1:]):
     return dropboxclient_app.run(argv)
 
 
-def debug(name, cmd_class, argv=None):
+def debug(name, cmd_class, argv=None):  # pragma: no cover
     """Helper for debugging single command without package installation."""
     import sys
 
