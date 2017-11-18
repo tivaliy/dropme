@@ -23,3 +23,9 @@ class InvalidFileException(ClientException):
     Should be raised when some problems while working with file occurred.
     """
     pass
+
+
+class ActionException(ClientException):
+    """
+    Should be raised when some problems occurred while perform any command
+    """

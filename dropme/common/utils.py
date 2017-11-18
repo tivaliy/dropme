@@ -7,7 +7,7 @@ import yaml
 
 
 def read_yaml_file(file_path):
-    """Parses yaml
+    """Parses yaml.
 
     :param file_path: path to yaml file as a string
     :returns: deserialized file
@@ -23,13 +23,13 @@ def get_display_data_single(fields, data, missing_field_value=None):
 
     :param fields: Iterable containing names of fields to be retrieved
                    from data
-    :param data:   Collection of JSON objects representing some
-                   external entities
+    :param data:   Collection of objects representing some external entities
     :param missing_field_value: the value will be used for all missing fields
 
     :return:       List containing the collection of values of the
                    supplied attributes
     """
+
     return [data.get(field, missing_field_value) for field in fields]
 
 
@@ -38,8 +38,7 @@ def get_display_data_multi(fields, data, sort_by=None):
 
     :param fields:  Iterable containing names of fields to be retrieved
                     from data
-    :param data:    Collection of JSON objects representing some
-                    external entities
+    :param data:    Collection of objects representing some external entities
     :param sort_by: List of fields to sort by. By default no sorting
 
     :return:        List containing the collection of values of the
@@ -55,7 +54,7 @@ def get_display_data_multi(fields, data, sort_by=None):
 
 def convert_size(size_bytes):
     """
-    Convert size in bytes to a human-readable form
+    Convert size in bytes to a human-readable form.
     """
 
     if size_bytes == 0:

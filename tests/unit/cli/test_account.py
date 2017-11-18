@@ -19,7 +19,6 @@ class TestAccountCommand(BaseCLITest):
             email='j.doe.example.com',
             country='UA')
         self.exec_command(args)
-
         mock_client.users_get_current_account.assert_called_once_with()
 
     def test_account_info_show_w_details(self, mock_client):
@@ -30,7 +29,6 @@ class TestAccountCommand(BaseCLITest):
             email='j.doe.example.com',
             country='UA')
         self.exec_command(args)
-
         mock_client.users_get_current_account.assert_called_once_with()
 
     def test_space_usage_show(self, mock_client):
@@ -42,5 +40,4 @@ class TestAccountCommand(BaseCLITest):
                 'individual', users.IndividualSpaceAllocation(allocated)))
         args = 'df'
         self.exec_command(args)
-
         mock_client.users_get_space_usage.assert_called_once_with()

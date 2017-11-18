@@ -40,6 +40,7 @@ setup(
         ],
         'dropme': [
             'df=dropme.commands.account:AccountOwnerSpaceUsageShow',
+            'ls=dropme.commands.files:FolderList',
             'whoami=dropme.commands.account:AccountOwnerInfoShow'
         ],
     },
