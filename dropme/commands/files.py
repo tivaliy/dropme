@@ -56,10 +56,10 @@ class FolderList(base.BaseListCommand):
             data = [
                 {'name': self._get_entry_name_by_type(entry),
                  'type': '-' if is_file(entry) else 'd',
-                 'size':
-                     utils.convert_size(entry.size) if is_file(entry) else '',
-                 'last_modified':
-                     entry.server_modified if is_file(entry) else ''
+                 'size': utils.convert_size(entry.size)
+                         if is_file(entry) else '',
+                 'last_modified': entry.server_modified.isoformat(' ')
+                         if is_file(entry) else ''
                  } for entry in response.entries]
         else:
             data = [{'name': self._get_entry_name_by_type(entry)}
