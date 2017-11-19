@@ -37,11 +37,6 @@ class BaseListCommand(lister.Lister, BaseCommand):
     """List all entities."""
 
     @property
-    def default_sorting_by(self):
-        """The first column in resulting table is default sorting field."""
-        return [self.columns[0]]
-
-    @property
     @abc.abstractmethod
     def columns(self):
         """Names of columns in the resulting table as a tuple."""
@@ -56,12 +51,10 @@ class BaseListCommand(lister.Lister, BaseCommand):
 
         group = next(matching_groups, None) or parser
 
-        group.add_argument('-s',
-                           '--sort-columns',
-                           nargs='+',
-                           metavar='SORT_COLUMN',
-                           default=self.default_sorting_by,
-                           help="Space separated list of keys for sorting the "
-                                "data. Defaults to '{0}'. Wrong values are "
-                                "ignored.".format(self.default_sorting_by))
+        group.add_argument(
+            '-s', '--sort-columns',
+            nargs='+',
+            metavar='SORT_COLUMN',
+            help="Space separated list of keys for sorting the data. "
+                 " Wrong values are ignored.")
         return parser

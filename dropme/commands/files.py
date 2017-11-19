@@ -25,10 +25,6 @@ class FolderList(base.BaseListCommand):
     def _get_entry_name_by_type(entry):
         return entry.name if is_file(entry) else entry.name + '/'
 
-    @property
-    def default_sorting_by(self):
-        return None
-
     def get_parser(self, prog_name):
         parser = super(FolderList, self).get_parser(prog_name)
         parser.add_argument(
