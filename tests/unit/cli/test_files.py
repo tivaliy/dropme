@@ -49,4 +49,4 @@ class TestFilesCommand(BaseCLITest):
         with pytest.raises(error.ActionException) as excinfo:
             self.exec_command(args)
         mock_client.files_list_folder.assert_called_once_with('/' + path)
-        assert "'/{0}': No such directory".format(path) in str(excinfo.value)
+        assert "ls: cannot access '/{0}'".format(path) in str(excinfo.value)
