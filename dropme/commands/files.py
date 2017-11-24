@@ -86,6 +86,13 @@ class FileUpload(base.BaseCommand):
                 "File '{0}' does not exist".format(file_path))
         return file_path
 
+    @staticmethod
+    def _normalize_destination_path(src_path, dst_path):
+        if dst_path == '/':
+            return os.path.join(dst_path, os.path.basename(src_path))
+        return dst_path if dst_path.startswith('/') else os.path.join('/',
+                                                                      dst_path)
+
     def upload_file(self, file_src, file_dst, autorename=False):
         file_size = os.path.getsize(file_src)
         response = None
@@ -125,6 +132,7 @@ class FileUpload(base.BaseCommand):
         parser.add_argument(
             'path',
             nargs='?',
+            default='/',
             help='path to the directory to upload file,'
                  'defaults to the root'
         )
@@ -137,11 +145,11 @@ class FileUpload(base.BaseCommand):
         return parser
 
     def take_action(self, parsed_args):
-        path = '/{0}'.format(parsed_args.path
-                             if parsed_args.path else parsed_args.file)
+        dst_path = self._normalize_destination_path(parsed_args.file,
+                                                    parsed_args.path)
         self.stdout.write("Uploading '{0}' file to Dropbox as '{1}'"
-                          "\n".format(parsed_args.file, path))
-        response = self.upload_file(parsed_args.file, path)
+                          "\n".format(parsed_args.file, dst_path))
+        response = self.upload_file(parsed_args.file, dst_path)
         msg = ("File '{0}' ({1}) was successfully uploaded to Dropbox "
                "as '{2}'\n".format(parsed_args.file,
                                    utils.convert_size(response.size),
