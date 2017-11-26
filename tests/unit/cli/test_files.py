@@ -53,11 +53,12 @@ class TestFilesCommand(BaseCLITest):
         mock_client.files_list_folder.assert_called_once_with('/' + path)
         assert "ls: cannot access '/{0}'".format(path) in str(excinfo.value)
 
-    @pytest.mark.parametrize('dst_path', [
-        '',
-        '/some/fake/path/fake_small_file.bin'
+    @pytest.mark.parametrize('dst_path, autorename', [
+        ('', False),
+        ('/some/fake/path/fake_small_file.bin', True)
     ])
-    def test_file_upload_at_once(self, mock_client, mocker, tmpdir, dst_path):
+    def test_file_upload_at_once(self, mock_client, mocker, tmpdir, dst_path,
+                                 autorename):
         file_content = b'Some fake data to be send'
         mocker.patch('dropme.commands.files.FileUpload.CHUNK_SIZE',
                      new_callable=mocker.PropertyMock, return_value=1024)
@@ -69,13 +70,14 @@ class TestFilesCommand(BaseCLITest):
             path_display=dst_path if dst_path else '/' + fake_file.basename,
             size=file_size)
 
-        args = 'upload {0} {1}'.format(fake_file.strpath, dst_path)
+        args = 'upload {0} {1} {2}'.format(
+            fake_file.strpath, dst_path, '--auto-rename' if autorename else '')
         self.exec_command(args)
 
         mock_client.files_upload.assert_called_once_with(
             file_content,
             dst_path if dst_path else '/' + fake_file.basename,
-            autorename=False)
+            autorename=autorename)
 
     def test_file_upload_in_parts_to_root(self, mock_client, mocker, tmpdir):
         chunk_size = 10

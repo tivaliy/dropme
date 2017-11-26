@@ -149,7 +149,8 @@ class FileUpload(base.BaseCommand):
                                                     parsed_args.path)
         self.stdout.write("Uploading '{0}' file to Dropbox as '{1}'"
                           "\n".format(parsed_args.file, dst_path))
-        response = self.upload_file(parsed_args.file, dst_path)
+        response = self.upload_file(parsed_args.file, dst_path,
+                                    parsed_args.auto_rename)
         msg = ("File '{0}' ({1}) was successfully uploaded to Dropbox "
                "as '{2}'\n".format(parsed_args.file,
                                    utils.convert_size(response.size),
