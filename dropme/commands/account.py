@@ -55,9 +55,9 @@ class AccountOwnerSpaceUsageShow(BaseShowCommand):
         available = allocated - used
         data = {
             'allocated': utils.convert_size(allocated),
-            'used': '{} ({:.3}%)'.format(utils.convert_size(used),
-                                         available * 100 / allocated),
-            'available': utils.convert_size(available),
+            'used': utils.convert_size(used),
+            'available': '{} ({:.3}%)'.format(utils.convert_size(available),
+                                              available * 100 / allocated)
         }
         data = utils.get_display_data_single(self.columns, data)
         return self.columns, data

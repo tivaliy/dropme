@@ -53,7 +53,7 @@ CLI tool to manage data in Dropbox workspace
         | Field     | Value           |
         +-----------+-----------------+
         | allocated | 2.0 GB          |
-        | used      | 1.11 MB (99.9%) |
-        | available | 2.0 GB          |
+        | used      | 326.19 MB       |
+        | available | 1.68 GB (84.1%) |
         +-----------+-----------------+
         ```
