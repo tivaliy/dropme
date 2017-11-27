@@ -65,8 +65,7 @@ def test_get_display_data_multi(fields, data, sort_by, expected):
     assert utils.get_display_data_multi(fields, data, sort_by) == expected
 
 
-@pytest.mark.xfail(raises=ValueError)
-def test_get_display_data_multi_w_non_existent_sort_by_field_fail():
-    utils.get_display_data_multi(
+def test_get_display_data_multi_w_non_existing_sort_by_field():
+    assert utils.get_display_data_multi(
         ('a', 'b'), [{'a': 12, 'b': 17}, {'a': 11, 'b': 5}], 'non-existing'
-    )
+    ) == [[12, 17], [11, 5]]

@@ -39,15 +39,15 @@ def get_display_data_multi(fields, data, sort_by=None):
     :param fields:  Iterable containing names of fields to be retrieved
                     from data
     :param data:    Collection of objects representing some external entities
-    :param sort_by: List of fields to sort by. By default no sorting
-
+    :param sort_by: List of fields to sort by. By default no sorting. Wrong
+                    values are ignored
     :return:        List containing the collection of values of the
                     supplied attributes
     """
 
     data = [get_display_data_single(fields, elem) for elem in data]
     if sort_by:
-        s_col_ids = [fields.index(col) for col in sort_by]
+        s_col_ids = [fields.index(col) for col in sort_by if col in fields]
         data.sort(key=lambda x: [x[s_col_id] for s_col_id in s_col_ids])
     return data
 

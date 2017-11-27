@@ -16,7 +16,7 @@ def is_file(entity):
 
 class FolderList(base.BaseListCommand):
     """
-    List directory content.
+    Lists directory content.
     """
 
     columns = ('name',)
