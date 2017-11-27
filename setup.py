@@ -40,7 +40,7 @@ setup(
         ],
         'dropme': [
             'df=dropme.commands.account:AccountOwnerSpaceUsageShow',
-            'ls=dropme.commands.files:FolderList',
+            'ls=dropme.commands.folder:FolderList',
             'upload=dropme.commands.files:FileUpload',
             'whoami=dropme.commands.account:AccountOwnerInfoShow'
         ],
