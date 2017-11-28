@@ -32,7 +32,7 @@ class FolderList(base.BaseListCommand):
         parser.add_argument(
             'path',
             nargs='?',
-            help='path to the directory for printing its content,'
+            help='the path of the directory for printing its content,'
                  'defaults to the root'
         )
         parser.add_argument(
@@ -77,7 +77,7 @@ class FolderCreate(base.BaseCommand):
         parser = super(FolderCreate, self).get_parser(prog_name)
         parser.add_argument(
             'path',
-            help='path in the Dropbox environment to create folder'
+            help='the path of the folder to create'
         )
         parser.add_argument(
             '-r', '--auto-rename',

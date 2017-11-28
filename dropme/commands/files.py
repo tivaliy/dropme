@@ -31,9 +31,9 @@ class FileUpload(base.BaseCommand):
         return file_path
 
     @staticmethod
-    def _normalize_destination_path(src_path, dst_path):
-        if dst_path == '/':
-            return os.path.join(dst_path, os.path.basename(src_path))
+    def _build_destination_path(src_path, dst_path=None):
+        if dst_path is None:
+            return os.path.join('/', os.path.basename(src_path))
         return dst_path if dst_path.startswith('/') else os.path.join('/',
                                                                       dst_path)
 
@@ -71,13 +71,12 @@ class FileUpload(base.BaseCommand):
         parser.add_argument(
             'file',
             type=self._get_file_path,
-            help='file to upload'
+            help='the path to the file to upload'
         )
         parser.add_argument(
             'path',
             nargs='?',
-            default='/',
-            help='path to the directory to upload file,'
+            help='the path of the directory to upload file,'
                  'defaults to the root'
         )
         parser.add_argument(
@@ -89,8 +88,8 @@ class FileUpload(base.BaseCommand):
         return parser
 
     def take_action(self, parsed_args):
-        dst_path = self._normalize_destination_path(parsed_args.file,
-                                                    parsed_args.path)
+        dst_path = self._build_destination_path(parsed_args.file,
+                                                parsed_args.path)
         self.stdout.write("Uploading '{0}' file to Dropbox as '{1}'"
                           "\n".format(parsed_args.file, dst_path))
         response = self.upload_file(parsed_args.file, dst_path,
@@ -113,12 +112,13 @@ class FileFolderDelete(base.BaseCommand):
         parser = super(FileFolderDelete, self).get_parser(prog_name)
         parser.add_argument(
             'path',
-            help='path in the Dropbox environment to delete file or folder'
+            help='the path of the file or folder to delete'
         )
         return parser
 
     def take_action(self, parsed_args):
-        path = os.path.join('/', parsed_args.path) if parsed_args.path else ''
+        path = parsed_args.path
+        path = path if path.startswith('/') else os.path.join('/', path)
         try:
             response = self.client.files_delete_v2(path)
         except exceptions.ApiError as exc:
