@@ -42,6 +42,7 @@ setup(
             'df=dropme.commands.account:AccountOwnerSpaceUsageShow',
             'ls=dropme.commands.folder:FolderList',
             'mkdir=dropme.commands.folder:FolderCreate',
+            'rm=dropme.commands.files:FileFolderDelete',
             'upload=dropme.commands.files:FileUpload',
             'whoami=dropme.commands.account:AccountOwnerInfoShow'
         ],

@@ -17,7 +17,7 @@ class FileUpload(base.BaseCommand):
     """
     Uploads file to a specified directory.
 
-    If destination directory path doesn't exist it will be created
+    If destination directory path doesn't exist it will be created.
     """
 
     # Upload 32 MB of file contents per request
@@ -99,4 +99,34 @@ class FileUpload(base.BaseCommand):
                "as '{2}'\n".format(parsed_args.file,
                                    utils.convert_size(response.size),
                                    response.path_display))
+        self.stdout.write(msg)
+
+
+class FileFolderDelete(base.BaseCommand):
+    """
+    Deletes the file or folder at a given path.
+
+    If the path is a folder, all its contents will be deleted too.
+    """
+
+    def get_parser(self, prog_name):
+        parser = super(FileFolderDelete, self).get_parser(prog_name)
+        parser.add_argument(
+            'path',
+            help='path in the Dropbox environment to delete file or folder'
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        path = os.path.join('/', parsed_args.path) if parsed_args.path else ''
+        try:
+            response = self.client.files_delete_v2(path)
+        except exceptions.ApiError as exc:
+            print(exc.error)
+            msg = "An error occurred while deleting '{0}': {1}.".format(
+                parsed_args.path, exc.error)
+            raise error.ActionException(msg) from exc
+        msg = "{0} '{1}' was successfully deleted.\n".format(
+            'File' if isinstance(response, files.FileMetadata) else 'Folder',
+            response.metadata.path_display)
         self.stdout.write(msg)

@@ -84,10 +84,9 @@ class TestFolderCommand(BaseCLITest):
         assert "mkdir: cannot create directory '{0}'".format(
             path) in str(excinfo.value)
 
-    def test_create_non_specified_folder_path_fail(self, mocker, capsys):
-        empty_path_parameter = ''
+    def test_create_w_non_specified_folder_path_fail(self, mocker, capsys):
         mocker.patch('dropme.client.get_client')
-        args = 'mkdir {0}'.format(empty_path_parameter)
+        args = 'mkdir'
         with pytest.raises(SystemExit):
             self.exec_command(args)
         out, err = capsys.readouterr()

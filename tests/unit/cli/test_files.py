@@ -102,3 +102,42 @@ class TestFilesCommand(BaseCLITest):
             self.exec_command(args)
         assert "An error occurred while uploading '{}'".format(
             fake_file) in str(excinfo.value)
+
+    @pytest.mark.parametrize('path, response', [
+        ('fake_folder', files.DeleteResult(
+            metadata=files.FolderMetadata(path_display='/fake_folder'))),
+        ('/foo/folder', files.DeleteResult(
+            metadata=files.FolderMetadata(path_display='/foo/bar/folder'))),
+        ('/bar/some.log', files.DeleteResult(
+            metadata=files.FileMetadata(path_display='/bar/some.log')))
+    ])
+    def test_delete_file_or_folder(self, mock_client, path, response):
+        args = 'rm {0}'.format(path)
+        path = path if path.startswith('/') else os.path.join('/', path)
+        mock_client.files_delete_v2.return_value = response
+        self.exec_command(args)
+        mock_client.files_delete_v2.assert_called_once_with(path)
+
+    def test_delete_w_non_specified_path_fail(self, mocker, capsys):
+        mocker.patch('dropme.client.get_client')
+        args = 'rm'
+        with pytest.raises(SystemExit):
+            self.exec_command(args)
+        out, err = capsys.readouterr()
+        assert "error: the following arguments are required: path" in err
+
+    def test_delete_non_existing_folder_fail(self, mock_client):
+        path = '/non/existing/path'
+        mock_client.files_delete_v2.side_effect = exceptions.ApiError(
+            request_id='ed9755c09d6f856ba81491ef2ec4a230',
+            error=files.DeleteError('path_lookup',
+                                    files.LookupError('not_found', None)),
+            user_message_locale='',
+            user_message_text=''
+        )
+        args = 'rm {0}'.format(path)
+        with pytest.raises(error.ActionException) as excinfo:
+            self.exec_command(args)
+        mock_client.files_delete_v2.assert_called_once_with(path)
+        assert "An error occurred while deleting '{0}':".format(
+            path) in str(excinfo.value)
