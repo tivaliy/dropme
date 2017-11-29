@@ -15,7 +15,7 @@ from ..common import utils
 
 class FileUpload(base.BaseCommand):
     """
-    Uploads file to a specified directory.
+    Uploads a file to a specified directory.
 
     If destination directory path doesn't exist it will be created.
     """
@@ -103,7 +103,7 @@ class FileUpload(base.BaseCommand):
 
 class FileFolderDelete(base.BaseCommand):
     """
-    Deletes the file or folder at a given path.
+    Deletes a file or a folder at a given path.
 
     If the path is a folder, all its contents will be deleted too.
     """
@@ -122,11 +122,58 @@ class FileFolderDelete(base.BaseCommand):
         try:
             response = self.client.files_delete_v2(path)
         except exceptions.ApiError as exc:
-            print(exc.error)
             msg = "An error occurred while deleting '{0}': {1}.".format(
                 parsed_args.path, exc.error)
             raise error.ActionException(msg) from exc
         msg = "{0} '{1}' was successfully deleted.\n".format(
             'File' if isinstance(response, files.FileMetadata) else 'Folder',
             response.metadata.path_display)
+        self.stdout.write(msg)
+
+
+class FileDownload(base.BaseCommand):
+    """
+    Downloads a file at a given local path.
+    """
+
+    def get_parser(self, prog_name):
+        parser = super(FileDownload, self).get_parser(prog_name)
+        parser.add_argument(
+            'path',
+            metavar='DROPBOX_FILE',
+            help='the path of the file to download'
+        )
+        parser.add_argument(
+            'file',
+            metavar='LOCAL_FILE',
+            nargs='?',
+            help='the path of the file to save data, '
+                 'defaults to current working directory'
+        )
+        parser.add_argument(
+            '--revision',
+            help='the revision of a file'
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        path = parsed_args.path
+        path = path if path.startswith('/') else os.path.join('/', path)
+        if not parsed_args.file:
+            dst_path = os.path.join(os.getcwd(), os.path.basename(path))
+        else:
+            dst_path = parsed_args.file
+
+        try:
+            response = self.client.files_download_to_file(
+                dst_path, path, rev=parsed_args.revision)
+        except (exceptions.ApiError, IOError, OSError) as exc:
+            msg = ("An error occurred while downloading '{0}' file as '{1}': "
+                   "{2}.".format(path, dst_path,
+                                 exc.error if hasattr(exc, 'error') else exc))
+            raise error.ActionException(msg) from exc
+        msg = ("File '{0}' (rev={1}, size {2}) from '{3}' was successfully "
+               "downloaded as '{4}'.\n".format(
+                response.name, response.rev, utils.convert_size(response.size),
+                response.path_display, dst_path))
         self.stdout.write(msg)

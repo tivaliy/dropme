@@ -141,3 +141,59 @@ class TestFilesCommand(BaseCLITest):
         mock_client.files_delete_v2.assert_called_once_with(path)
         assert "An error occurred while deleting '{0}':".format(
             path) in str(excinfo.value)
+
+    @pytest.mark.parametrize('path, dst_path, rev, response', [
+        ('root.folder.file', '', 'd5e0155e3', files.FileMetadata(
+            name='root.folder.file', path_display='/root.folder.file',
+            rev='d5e0155e3', size=1024 * 1024)),
+        ('/empty/destination.file', '', 'a52715ee9', files.FileMetadata(
+            name='destination.file', path_display='/empty/destination.file',
+            rev='d5e0155e3', size=10)),
+        ('/foo/bar.file', 'local/path.file', 'e320133f1', files.FileMetadata(
+            name='bar.file', path_display='/foo/bar.file',
+            rev='e320133f1', size=34524)),
+        ('bar/some.log', 'bar/new_name.log', None, files.FileMetadata(
+            name='some.log', path_display='/bar/some.log',
+            rev='44eaa1002', size=563233467))
+    ])
+    def test_download_file(self, mocker, mock_client, path, dst_path, rev,
+                           response):
+        cwd = '/foo/bar'
+        mocker.patch('dropme.commands.files.os.getcwd', return_value=cwd)
+        args = 'download {0} {1} {2}'.format(
+            path, dst_path, '--revision {0}'.format(rev) if rev else '')
+        path = path if path.startswith('/') else os.path.join('/', path)
+        dst_path = dst_path if dst_path else os.path.join(
+            cwd, os.path.basename(path))
+        mock_client.files_download_to_file.return_value = response
+        self.exec_command(args)
+        mock_client.files_download_to_file.assert_called_once_with(
+            dst_path, path, rev=rev)
+
+    def test_download_w_non_specified_paths_fail(self, mocker, capsys):
+        mocker.patch('dropme.client.get_client')
+        args = 'download'
+        with pytest.raises(SystemExit):
+            self.exec_command(args)
+        out, err = capsys.readouterr()
+        msg = "error: the following arguments are required: DROPBOX_FILE"
+        assert msg in err
+
+    def test_download_non_existing_file_fail(self, mock_client):
+        path = '/non/existing/path/fake.log'
+        dst_path = '/my/local/path/fake.log'
+        mock_client.files_download_to_file.side_effect = exceptions.ApiError(
+            request_id='ed9755c09d6f856ba81491ef2ec4a230',
+            error=files.DownloadError(
+                'path', files.LookupError('not_found', None)),
+            user_message_locale='',
+            user_message_text=''
+        )
+        args = 'download {0} {1}'.format(path, dst_path)
+        with pytest.raises(error.ActionException) as excinfo:
+            self.exec_command(args)
+        mock_client.files_download_to_file.assert_called_once_with(dst_path,
+                                                                   path,
+                                                                   rev=None)
+        assert "An error occurred while downloading '{0}'".format(
+            path) in str(excinfo.value)

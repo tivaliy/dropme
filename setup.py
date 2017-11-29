@@ -40,6 +40,7 @@ setup(
         ],
         'dropme': [
             'df=dropme.commands.account:AccountOwnerSpaceUsageShow',
+            'download=dropme.commands.files:FileDownload',
             'ls=dropme.commands.folder:FolderList',
             'mkdir=dropme.commands.folder:FolderCreate',
             'rm=dropme.commands.files:FileFolderDelete',
