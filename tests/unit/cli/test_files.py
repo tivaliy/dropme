@@ -4,6 +4,8 @@
 
 import os
 
+from datetime import datetime
+
 import pytest
 from dropbox import files
 from dropbox import exceptions
@@ -170,7 +172,7 @@ class TestFilesCommand(BaseCLITest):
         mock_client.files_download_to_file.assert_called_once_with(
             dst_path, path, rev=rev)
 
-    def test_download_w_non_specified_paths_fail(self, mocker, capsys):
+    def test_download_w_non_specified_path_fail(self, mocker, capsys):
         mocker.patch('dropme.client.get_client')
         args = 'download'
         with pytest.raises(SystemExit):
@@ -197,3 +199,55 @@ class TestFilesCommand(BaseCLITest):
                                                                    rev=None)
         assert "An error occurred while downloading '{0}'".format(
             path) in str(excinfo.value)
+
+    @pytest.mark.parametrize(
+        'path, include_media_info, include_deleted, include_has_members, '
+        'response',
+        [('/root.folder.file', False, False, False, files.FileMetadata(
+            name='root.folder.file', path_display='/root.folder.file',
+            rev='d5e0155e3', size=1024, content_hash='20978837' * 8,
+            client_modified=datetime(2017, 10, 29, 11, 12, 54),
+            server_modified=datetime(2017, 10, 29, 11, 12, 54))),
+         ('/foo/bar/folder', True, True, True, files.FolderMetadata(
+            name='folder', path_display='/foo/bar/folder'))])
+    def test_show_status_for_file_or_folder(
+            self, mock_client, path, include_media_info, include_deleted,
+            include_has_members, response):
+        mock_client.files_get_metadata.return_value = response
+        args = 'status {0} {1} {2} {3}'.format(
+            path,
+            '--include-media-info' if include_media_info else '',
+            '--include-deleted' if include_deleted else '',
+            '--include-has-members' if include_has_members else '')
+        self.exec_command(args)
+        mock_client.files_get_metadata.assert_called_once_with(
+            path,
+            include_media_info=include_media_info,
+            include_deleted=include_deleted,
+            include_has_explicit_shared_members=include_has_members)
+
+    def test_show_status_w_non_specified_path_fail(self, mocker, capsys):
+        mocker.patch('dropme.client.get_client')
+        args = 'status'
+        with pytest.raises(SystemExit):
+            self.exec_command(args)
+        out, err = capsys.readouterr()
+        assert "error: the following arguments are required: path"in err
+
+    def test_show_status_non_existing_file_fail(self, mock_client):
+        path = '/non/existing/path/fake.log'
+        mock_client.files_get_metadata.side_effect = exceptions.ApiError(
+            request_id='ed9755c09d6f856ba81491ef2ec4a230',
+            error=files.GetMetadataError(
+                'path', files.LookupError('not_found', None)),
+            user_message_locale='',
+            user_message_text=''
+        )
+        args = 'status {0}'.format(path)
+        with pytest.raises(error.ActionException) as excinfo:
+            self.exec_command(args)
+        mock_client.files_get_metadata.assert_called_once_with(
+            path, include_media_info=False, include_deleted=False,
+            include_has_explicit_shared_members=False)
+        assert "status: cannot fetch metadata for '{0}'".format(path) in str(
+            excinfo.value)

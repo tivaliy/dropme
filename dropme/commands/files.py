@@ -13,6 +13,10 @@ from .. import error
 from ..common import utils
 
 
+def is_file(metadata):
+    return isinstance(metadata, files.FileMetadata)
+
+
 class FileUpload(base.BaseCommand):
     """
     Uploads a file to a specified directory.
@@ -177,3 +181,76 @@ class FileDownload(base.BaseCommand):
                 response.name, response.rev, utils.convert_size(response.size),
                 response.path_display, dst_path))
         self.stdout.write(msg)
+
+
+class FileFolderStatusShow(base.BaseShowCommand):
+    """
+    Shows status for a specified file or folder.
+    """
+    columns = ('name', 'type', 'path')
+
+    def get_parser(self, prog_name):
+        parser = super(FileFolderStatusShow, self).get_parser(prog_name)
+        parser.add_argument(
+            'path',
+            help='the path to the file to get metadata'
+        )
+        parser.add_argument(
+            '-i', '--include-media-info',
+            action='store_true',
+            help='show media info for file with photo or video content'
+        )
+        parser.add_argument(
+            '-d', '--include-deleted',
+            action='store_true',
+            help='fetch data for deleted file sor folder'
+        )
+        parser.add_argument(
+            '-m', '--include-has-members',
+            action='store_true',
+            help='indicate whether or not file has any explicit shared members'
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        path = parsed_args.path
+        path = path if path.startswith('/') else os.path.join('/', path)
+        has_members = parsed_args.include_has_members
+        try:
+            response = self.client.files_get_metadata(
+                path,
+                include_media_info=parsed_args.include_media_info,
+                include_deleted=parsed_args.include_deleted,
+                include_has_explicit_shared_members=has_members
+            )
+        except (exceptions.ApiError, exceptions.BadInputError) as exc:
+            msg = "status: cannot fetch metadata for '{0}': {1}.".format(
+                path, exc.error if hasattr(exc, 'error') else exc.message)
+            raise error.ActionException(msg) from exc
+        data = {'name': response.name,
+                'path': response.path_display}
+        # TODO vkulanov Add more output results
+        if is_file(response):
+            self.columns += ('size', 'client_modified', 'server_modified',
+                             'revision', 'parent_shared_folder_id',
+                             'content_hash', 'has_explicit_shared_members')
+            data.update(
+                {'type': 'file',
+                 'size': utils.convert_size(response.size),
+                 'client_modified': response.client_modified.isoformat(' '),
+                 'server_modified': response.server_modified.isoformat(' '),
+                 'revision': response.rev,
+                 'parent_shared_folder_id': response.parent_shared_folder_id,
+                 'content_hash': response.content_hash,
+                 'has_explicit_shared_members':
+                     response.has_explicit_shared_members})
+        else:
+            self.columns += ('shared_folder_id', 'parent_shared_folder_id',
+                             'property_groups')
+            data.update(
+                {'type': 'directory',
+                 'shared_folder_id': response.shared_folder_id,
+                 'parent_shared_folder_id': response.parent_shared_folder_id,
+                 'property_groups': response.property_groups})
+        data = utils.get_display_data_single(self.columns, data)
+        return self.columns, data
