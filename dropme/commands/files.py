@@ -3,6 +3,7 @@
 #
 
 import argparse
+import datetime
 import os
 
 from dropbox import exceptions
@@ -233,7 +234,7 @@ class FileFolderStatusShow(base.BaseShowCommand):
         if is_file(response):
             self.columns += ('size', 'client_modified', 'server_modified',
                              'revision', 'parent_shared_folder_id',
-                             'content_hash', 'has_explicit_shared_members')
+                             'has_explicit_shared_members', 'content_hash')
             data.update(
                 {'type': 'file',
                  'size': utils.convert_size(response.size),
@@ -244,6 +245,16 @@ class FileFolderStatusShow(base.BaseShowCommand):
                  'content_hash': response.content_hash,
                  'has_explicit_shared_members':
                      response.has_explicit_shared_members})
+            if response.media_info and parsed_args.include_media_info:
+                metadata = response.media_info.get_metadata()
+                self.columns += ('width', 'height', 'time_taken')
+                data.update({'width': metadata.dimensions.width,
+                             'height': metadata.dimensions.height,
+                             'time_taken': metadata.time_taken.isoformat(' ')})
+                if isinstance(metadata, files.VideoMetadata):
+                    self.columns += ('duration',)
+                    data['duration'] = datetime.timedelta(
+                        milliseconds=metadata.duration)
         else:
             self.columns += ('shared_folder_id', 'parent_shared_folder_id',
                              'property_groups')

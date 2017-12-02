@@ -208,6 +208,14 @@ class TestFilesCommand(BaseCLITest):
             rev='d5e0155e3', size=1024, content_hash='20978837' * 8,
             client_modified=datetime(2017, 10, 29, 11, 12, 54),
             server_modified=datetime(2017, 10, 29, 11, 12, 54))),
+         ('/dummy/video.avi', True, False, False, files.FileMetadata(
+             name='video.avi', path_display='/dummy/video.avi',
+             rev='d5e0155e3', size=143234451, content_hash='da364337' * 8,
+             client_modified=datetime(2017, 10, 29, 11, 12, 54),
+             server_modified=datetime(2017, 10, 29, 11, 12, 54),
+             media_info=files.MediaInfo('metadata', files.VideoMetadata(
+                 files.Dimensions(768, 1024), duration=3123451,
+                 time_taken=datetime(2016, 10, 17, 10, 10, 54))))),
          ('/foo/bar/folder', True, True, True, files.FolderMetadata(
             name='folder', path_display='/foo/bar/folder'))])
     def test_show_status_for_file_or_folder(
