@@ -2,6 +2,8 @@
 #    Copyright 2017 Vitalii Kulanov
 #
 
+import os
+
 from datetime import datetime
 
 import pytest
@@ -17,24 +19,23 @@ class TestFolderCommand(BaseCLITest):
     Tests for dropme folders related commands.
     """
 
-    def test_files_and_folders_list_root(self, mock_client):
-        args = 'ls'
-        mock_client.files_list_folder.return_value = files.ListFolderResult(
+    @pytest.mark.parametrize('path, args, response', [
+        ('root.folder', '', files.ListFolderResult(
             entries=[files.FolderMetadata(name='fake-folder-1'),
-                     files.FileMetadata(name='fake-file-1')])
-        self.exec_command(args)
-        mock_client.files_list_folder.assert_called_once_with('')
-
-    def test_files_and_folders_list_w_path(self, mock_client):
-        path = 'fake_folder_path'
-        args = 'ls {0} --long-listing'.format(path)
-        mock_client.files_list_folder.return_value = files.ListFolderResult(
+                     files.FileMetadata(name='fake-file-1')])),
+        ('/foo/bar', '--long-listing', files.ListFolderResult(
             entries=[files.FolderMetadata(name='fake-folder-1'),
                      files.FileMetadata(name='fake-file-1', size=1234,
                                         server_modified=datetime(2017, 10, 29,
                                                                  11, 12, 54))])
+         )
+    ])
+    def test_files_and_folders_list(self, mock_client, path, args, response):
+        path = path if path.startswith('/') else os.path.join('/', path)
+        args = 'ls {0} {1}'.format(path, args)
+        mock_client.files_list_folder.return_value = response
         self.exec_command(args)
-        mock_client.files_list_folder.assert_called_once_with('/' + path)
+        mock_client.files_list_folder.assert_called_once_with(path)
 
     def test_files_and_folders_list_non_existing_path_fail(self, mock_client):
         path = 'non_existing_folder_path'
