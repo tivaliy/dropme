@@ -69,3 +69,12 @@ def test_get_display_data_multi_w_non_existing_sort_by_field():
     assert utils.get_display_data_multi(
         ('a', 'b'), [{'a': 12, 'b': 17}, {'a': 11, 'b': 5}], 'non-existing'
     ) == [[12, 17], [11, 5]]
+
+
+@pytest.mark.parametrize('example_path, expected_result', [
+    ('/foo/bar', '/foo/bar'),
+    ('dummy/path', '/dummy/path'),
+    ('path/contains/trailing/slash/', '/path/contains/trailing/slash/'),
+])
+def test_normalize_path(example_path, expected_result):
+    assert utils.normalize_path(example_path) == expected_result

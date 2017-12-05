@@ -3,6 +3,8 @@
 #
 
 import math
+import os
+
 import yaml
 
 
@@ -64,3 +66,10 @@ def convert_size(size_bytes):
     p = math.pow(1024, i)
     s = round(size_bytes / p, 2)
     return "{} {}".format(s, size_name[i])
+
+
+def normalize_path(path):
+    """
+    Normalize a pathname by adding leading slash
+    """
+    return path if path.startswith('/') else os.path.join('/', path)

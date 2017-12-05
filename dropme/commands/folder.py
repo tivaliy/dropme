@@ -88,8 +88,7 @@ class FolderCreate(base.BaseCommand):
         return parser
 
     def take_action(self, parsed_args):
-        path = parsed_args.path
-        path = path if path.startswith('/') else os.path.join('/', path)
+        path = utils.normalize_path(parsed_args.path)
         try:
             response = self.client.files_create_folder_v2(
                 path, autorename=parsed_args.auto_rename)

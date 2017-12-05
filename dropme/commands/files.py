@@ -39,8 +39,7 @@ class FileUpload(base.BaseCommand):
     def _build_destination_path(src_path, dst_path=None):
         if dst_path is None:
             return os.path.join('/', os.path.basename(src_path))
-        return dst_path if dst_path.startswith('/') else os.path.join('/',
-                                                                      dst_path)
+        return utils.normalize_path(dst_path)
 
     def upload_file(self, file_src, file_dst, autorename=False):
         file_size = os.path.getsize(file_src)
@@ -122,8 +121,7 @@ class FileFolderDelete(base.BaseCommand):
         return parser
 
     def take_action(self, parsed_args):
-        path = parsed_args.path
-        path = path if path.startswith('/') else os.path.join('/', path)
+        path = utils.normalize_path(parsed_args.path)
         try:
             response = self.client.files_delete_v2(path)
         except exceptions.ApiError as exc:
@@ -162,8 +160,7 @@ class FileDownload(base.BaseCommand):
         return parser
 
     def take_action(self, parsed_args):
-        path = parsed_args.path
-        path = path if path.startswith('/') else os.path.join('/', path)
+        path = utils.normalize_path(parsed_args.path)
         if not parsed_args.file:
             dst_path = os.path.join(os.getcwd(), os.path.basename(path))
         else:
@@ -214,8 +211,7 @@ class FileFolderStatusShow(base.BaseShowCommand):
         return parser
 
     def take_action(self, parsed_args):
-        path = parsed_args.path
-        path = path if path.startswith('/') else os.path.join('/', path)
+        path = utils.normalize_path(parsed_args.path)
         has_members = parsed_args.include_has_members
         try:
             response = self.client.files_get_metadata(
