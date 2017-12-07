@@ -5,27 +5,21 @@
 import os
 
 from dropbox import exceptions
-from dropbox import files
 
 from . import base
 from .. import error
 from ..common import utils
 
 
-def is_file(entity):
-    return isinstance(entity, files.FileMetadata)
-
-
-class FolderList(base.BaseListCommand):
+class FolderList(base.BaseListCommand, base.FileFolderMixIn):
     """
     Lists directory content.
     """
 
     columns = ('name',)
 
-    @staticmethod
-    def _get_entry_name_by_type(entry):
-        return entry.name if is_file(entry) else entry.name + '/'
+    def _get_entry_name_by_type(self, entry):
+        return entry.name if self.is_file(entry) else entry.name + '/'
 
     def get_parser(self, prog_name):
         parser = super(FolderList, self).get_parser(prog_name)
@@ -54,11 +48,11 @@ class FolderList(base.BaseListCommand):
             self.columns = ('type', 'size', 'last_modified', 'name')
             data = [
                 {'name': self._get_entry_name_by_type(entry),
-                 'type': '-' if is_file(entry) else 'd',
+                 'type': '-' if self.is_file(entry) else 'd',
                  'size': utils.convert_size(entry.size)
-                         if is_file(entry) else '',
+                         if self.is_file(entry) else '',
                  'last_modified': entry.server_modified.isoformat(' ')
-                         if is_file(entry) else ''
+                         if self.is_file(entry) else ''
                  } for entry in response.entries]
         else:
             data = [{'name': self._get_entry_name_by_type(entry)}

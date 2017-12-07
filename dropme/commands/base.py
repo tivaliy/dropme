@@ -7,6 +7,7 @@ import abc
 from cliff import command
 from cliff import lister
 from cliff import show
+from dropbox import files
 
 from .. import client
 
@@ -58,3 +59,26 @@ class BaseListCommand(lister.Lister, BaseCommand):
             help="Space separated list of keys for sorting the data. "
                  " Wrong values are ignored.")
         return parser
+
+
+class FileFolderMixIn(object):
+    """MixIn class for file and folder related actions."""
+
+    @staticmethod
+    def get_entity_type(metadata):
+        """Returns the type of metadata object
+
+        :param metadata: Metadata of the object
+        :return: 'file'|'folder'
+        """
+        type_mapper = {'file': isinstance(metadata, files.FileMetadata),
+                       'folder': isinstance(metadata, files.FolderMetadata)}
+        return next(k for k, v in type_mapper.items() if v)
+
+    @staticmethod
+    def is_file(metadata):
+        return isinstance(metadata, files.FileMetadata)
+
+    @staticmethod
+    def is_folder(metadata):
+        return isinstance(metadata, files.FolderMetadata)

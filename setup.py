@@ -39,6 +39,7 @@ setup(
             'dropme = dropme.app:main',
         ],
         'dropme': [
+            'cp=dropme.commands.files:FileCopy',
             'df=dropme.commands.account:AccountOwnerSpaceUsageShow',
             'download=dropme.commands.files:FileDownload',
             'ls=dropme.commands.folder:FolderList',

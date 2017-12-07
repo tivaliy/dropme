@@ -14,10 +14,6 @@ from .. import error
 from ..common import utils
 
 
-def is_file(metadata):
-    return isinstance(metadata, files.FileMetadata)
-
-
 class FileUpload(base.BaseCommand):
     """
     Uploads a file to a specified directory.
@@ -105,7 +101,7 @@ class FileUpload(base.BaseCommand):
         self.stdout.write(msg)
 
 
-class FileFolderDelete(base.BaseCommand):
+class FileFolderDelete(base.BaseCommand, base.FileFolderMixIn):
     """
     Deletes a file or a folder at a given path.
 
@@ -128,8 +124,10 @@ class FileFolderDelete(base.BaseCommand):
             msg = "An error occurred while deleting '{0}': {1}.".format(
                 parsed_args.path, exc.error)
             raise error.ActionException(msg) from exc
-        msg = "{0} '{1}' was successfully deleted.\n".format(
-            'File' if isinstance(response, files.FileMetadata) else 'Folder',
+        msg = "{0} '{1}' {2}was successfully deleted from '{3}'.\n".format(
+            self.get_entity_type(response.metadata).capitalize(),
+            response.metadata.name,
+            '' if self.is_file(response.metadata) else 'and all its content ',
             response.metadata.path_display)
         self.stdout.write(msg)
 
@@ -181,7 +179,7 @@ class FileDownload(base.BaseCommand):
         self.stdout.write(msg)
 
 
-class FileFolderStatusShow(base.BaseShowCommand):
+class FileFolderStatusShow(base.BaseShowCommand, base.FileFolderMixIn):
     """
     Shows status for a specified file or folder.
     """
@@ -227,7 +225,7 @@ class FileFolderStatusShow(base.BaseShowCommand):
         data = {'name': response.name,
                 'path': response.path_display}
         # TODO vkulanov Add more output results
-        if is_file(response):
+        if self.is_file(response):
             self.columns += ('size', 'client_modified', 'server_modified',
                              'revision', 'parent_shared_folder_id',
                              'has_explicit_shared_members', 'content_hash')
@@ -261,3 +259,64 @@ class FileFolderStatusShow(base.BaseShowCommand):
                  'property_groups': response.property_groups})
         data = utils.get_display_data_single(self.columns, data)
         return self.columns, data
+
+
+class FileCopy(base.BaseCommand, base.FileFolderMixIn):
+    """
+    Copies a file or folder to a different location in the user’s Dropbox.
+
+    If the source path is a folder all its contents will be copied.
+    If destination path doesn't exist it will be created.
+    """
+
+    def get_parser(self, prog_name):
+        parser = super(FileCopy, self).get_parser(prog_name)
+        parser.add_argument(
+            'from_path',
+            help="path to a file or folder in the user's Dropbox to copy"
+        )
+        parser.add_argument(
+            'to_path',
+            help="destination path in the users's Dropbox. Will be created"
+                 "if does not exist"
+        )
+        parser.add_argument(
+            '--allow-shared-folder',
+            action='store_true',
+            help='whether or not allow to copy to a shared folder'
+        )
+        parser.add_argument(
+            '-r', '--auto-rename',
+            action='store_true',
+            help='whether the file should be renamed '
+                 'if there is a name conflict'
+        )
+        parser.add_argument(
+            '--allow-ownership-transfer',
+            action='store_true',
+            help='allow moves by owner even if it would result in an '
+                 'ownership transfer for the content being moved. '
+                 'This does not apply to copies.'
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        from_path = utils.normalize_path(parsed_args.from_path)
+        to_path = utils.normalize_path(parsed_args.to_path)
+        try:
+            response = self.client.files_copy_v2(
+                from_path, to_path, autorename=parsed_args.auto_rename,
+                allow_shared_folder=parsed_args.allow_shared_folder,
+                allow_ownership_transfer=parsed_args.allow_ownership_transfer
+            )
+        except exceptions.ApiError as exc:
+            msg = "cp: cannot copy from '{0}' to '{1}': {2}.".format(
+                from_path, to_path,  exc.error)
+            raise error.ActionException(msg) from exc
+        msg = ("{0} '{1}' {2}was successfully copied from '{3}' as '{4}'.\n"
+               "".format(self.get_entity_type(response.metadata).capitalize(),
+                         os.path.basename(from_path),
+                         'and all its content ' if self.is_folder(
+                             response.metadata) else '',
+                         from_path, response.metadata.path_display))
+        self.stdout.write(msg)
