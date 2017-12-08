@@ -315,3 +315,55 @@ class TestFilesCommand(BaseCLITest):
         out, err = capsys.readouterr()
         msg = "error: the following arguments are required: from_path, to_path"
         assert msg in err
+
+    @pytest.mark.parametrize('from_path, to_path, arguments, response', [
+        ('fake_folder_src', 'fake_folder_dst', '', files.RelocationResult(
+            metadata=files.FolderMetadata(path_display='/fake_folder_dst',
+                                          name='fake_folder_dst'))),
+        ('/foo/folder', '/bar/folder', '--auto-rename', files.RelocationResult(
+            metadata=files.FolderMetadata(path_display='/bar/folder',
+                                          name='folder'))),
+        ('/bar/some.log', 'foo/another.log', '', files.RelocationResult(
+            metadata=files.FileMetadata(path_display='/foo/another.log',
+                                        name='another.log')))
+    ])
+    def test_move_file_or_folder(self, mock_client, from_path, to_path,
+                                 arguments, response):
+        args = 'mv {0} {1} {2}'.format(from_path, to_path, arguments)
+        mock_client.files_move_v2.return_value = response
+        self.exec_command(args)
+        mock_client.files_move_v2.assert_called_once_with(
+            utils.normalize_path(from_path), utils.normalize_path(to_path),
+            autorename=True if '--auto-rename' in arguments else False,
+            allow_shared_folder=True if '--allow-shared-folder'
+                                        in arguments else False,
+            allow_ownership_transfer=True if '--allow-ownership-transfer'
+                                             in arguments else False)
+
+    def test_move_file_or_folder_non_existing_source_fail(self, mock_client):
+        from_path = '/non/existing/path/fake.log'
+        to_path = '/foo/bar/fake.log'
+        mock_client.files_move_v2.side_effect = exceptions.ApiError(
+            request_id='ed9755c09d6f856ba81491ef2ec4a230',
+            error=files.RelocationError(
+                'from_lookup', files.LookupError('not_found', None)),
+            user_message_locale='',
+            user_message_text=''
+        )
+        args = 'mv {0} {1}'.format(from_path, to_path)
+        with pytest.raises(error.ActionException) as excinfo:
+            self.exec_command(args)
+        mock_client.files_move_v2.assert_called_once_with(
+            from_path, to_path, autorename=False, allow_shared_folder=False,
+            allow_ownership_transfer=False)
+        assert "mv: cannot move from '{0}' to '{1}': ".format(
+            from_path, to_path) in str(excinfo.value)
+
+    def test_move_file_or_folder_wo_specified_paths_fail(self, mocker, capsys):
+        mocker.patch('dropme.client.get_client')
+        args = 'mv'
+        with pytest.raises(SystemExit):
+            self.exec_command(args)
+        out, err = capsys.readouterr()
+        msg = "error: the following arguments are required: from_path, to_path"
+        assert msg in err

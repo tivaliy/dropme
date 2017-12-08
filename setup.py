@@ -39,11 +39,12 @@ setup(
             'dropme = dropme.app:main',
         ],
         'dropme': [
-            'cp=dropme.commands.files:FileCopy',
+            'cp=dropme.commands.files:FileFolderCopy',
             'df=dropme.commands.account:AccountOwnerSpaceUsageShow',
             'download=dropme.commands.files:FileDownload',
             'ls=dropme.commands.folder:FolderList',
             'mkdir=dropme.commands.folder:FolderCreate',
+            'mv=dropme.commands.files:FileFolderMove',
             'rm=dropme.commands.files:FileFolderDelete',
             'status=dropme.commands.files:FileFolderStatusShow',
             'upload=dropme.commands.files:FileUpload',

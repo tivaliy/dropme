@@ -2,6 +2,7 @@
 #    Copyright 2017 Vitalii Kulanov
 #
 
+import abc
 import argparse
 import datetime
 import os
@@ -71,19 +72,19 @@ class FileUpload(base.BaseCommand):
         parser.add_argument(
             'file',
             type=self._get_file_path,
-            help='the path to the file to upload'
+            help='The path to the file to upload.'
         )
         parser.add_argument(
             'path',
             nargs='?',
-            help='the path of the directory to upload file,'
-                 'defaults to the root'
+            help='The path of the directory to upload file,'
+                 'defaults to the root.'
         )
         parser.add_argument(
             '-r', '--auto-rename',
             action='store_true',
-            help='whether the file should be renamed '
-                 'if there is a name conflict'
+            help='Whether the file should be renamed '
+                 'if there is a name conflict.'
         )
         return parser
 
@@ -105,14 +106,14 @@ class FileFolderDelete(base.BaseCommand, base.FileFolderMixIn):
     """
     Deletes a file or a folder at a given path.
 
-    If the path is a folder, all its contents will be deleted too.
+    If the path is a folder, all its content will be deleted too.
     """
 
     def get_parser(self, prog_name):
         parser = super(FileFolderDelete, self).get_parser(prog_name)
         parser.add_argument(
             'path',
-            help='the path of the file or folder to delete'
+            help='The path of the file or folder to delete.'
         )
         return parser
 
@@ -142,18 +143,18 @@ class FileDownload(base.BaseCommand):
         parser.add_argument(
             'path',
             metavar='DROPBOX_FILE',
-            help='the path of the file to download'
+            help='The path of the file to download.'
         )
         parser.add_argument(
             'file',
             metavar='LOCAL_FILE',
             nargs='?',
-            help='the path of the file to save data, '
-                 'defaults to current working directory'
+            help='The path of the file to save data, '
+                 'defaults to current working directory.'
         )
         parser.add_argument(
             '--revision',
-            help='the revision of a file'
+            help='The revision of a file.'
         )
         return parser
 
@@ -189,22 +190,22 @@ class FileFolderStatusShow(base.BaseShowCommand, base.FileFolderMixIn):
         parser = super(FileFolderStatusShow, self).get_parser(prog_name)
         parser.add_argument(
             'path',
-            help='the path to the file to get metadata'
+            help='The path to the file to get metadata.'
         )
         parser.add_argument(
             '-i', '--include-media-info',
             action='store_true',
-            help='show media info for file with photo or video content'
+            help='Show media info for file with photo or video content.'
         )
         parser.add_argument(
             '-d', '--include-deleted',
             action='store_true',
-            help='fetch data for deleted file sor folder'
+            help='Fetch data for deleted file sor folder.'
         )
         parser.add_argument(
             '-m', '--include-has-members',
             action='store_true',
-            help='indicate whether or not file has any explicit shared members'
+            help='Indicate whether or not file has any explicit shared members'
         )
         return parser
 
@@ -261,62 +262,96 @@ class FileFolderStatusShow(base.BaseShowCommand, base.FileFolderMixIn):
         return self.columns, data
 
 
-class FileCopy(base.BaseCommand, base.FileFolderMixIn):
+class BaseFileFolderAction(base.BaseCommand, base.FileFolderMixIn):
     """
-    Copies a file or folder to a different location in the user’s Dropbox.
+    Base class to perform move or copy action on files/folders.
+    """
 
-    If the source path is a folder all its contents will be copied.
-    If destination path doesn't exist it will be created.
-    """
+    @property
+    @abc.abstractmethod
+    def action_type(self):
+        """Type of action: 'copy'|'move'
+
+        :rtype: str
+        """
 
     def get_parser(self, prog_name):
-        parser = super(FileCopy, self).get_parser(prog_name)
+        parser = super(BaseFileFolderAction, self).get_parser(prog_name)
         parser.add_argument(
             'from_path',
-            help="path to a file or folder in the user's Dropbox to copy"
+            help="Path to a file or folder in the user's Dropbox "
+                 "to {0}.".format(self.action_type)
         )
         parser.add_argument(
             'to_path',
-            help="destination path in the users's Dropbox. Will be created"
-                 "if does not exist"
+            help="Destination path in the users's Dropbox. Will be created"
+                 "if does not exist."
         )
         parser.add_argument(
             '--allow-shared-folder',
             action='store_true',
-            help='whether or not allow to copy to a shared folder'
+            help='Whether or not allow to {0} '
+                 'to a shared folder.'.format(self.action_type)
         )
         parser.add_argument(
             '-r', '--auto-rename',
             action='store_true',
-            help='whether the file should be renamed '
-                 'if there is a name conflict'
+            help='Whether the file should be renamed '
+                 'if there is a name conflict.'
         )
         parser.add_argument(
             '--allow-ownership-transfer',
             action='store_true',
-            help='allow moves by owner even if it would result in an '
+            help='Allow moves by owner even if it would result in an '
                  'ownership transfer for the content being moved. '
                  'This does not apply to copies.'
         )
         return parser
 
     def take_action(self, parsed_args):
+        actions = {'copy': self.client.files_copy_v2,
+                   'move': self.client.files_move_v2}
+        aliases = {'copy': ('cp', 'copied'), 'move': ('mv', 'moved')}
         from_path = utils.normalize_path(parsed_args.from_path)
         to_path = utils.normalize_path(parsed_args.to_path)
         try:
-            response = self.client.files_copy_v2(
+            response = actions[self.action_type](
                 from_path, to_path, autorename=parsed_args.auto_rename,
                 allow_shared_folder=parsed_args.allow_shared_folder,
                 allow_ownership_transfer=parsed_args.allow_ownership_transfer
             )
         except exceptions.ApiError as exc:
-            msg = "cp: cannot copy from '{0}' to '{1}': {2}.".format(
-                from_path, to_path,  exc.error)
+            msg = "{0}: cannot {1} from '{2}' to '{3}': {4}.".format(
+                aliases[self.action_type][0], self.action_type, from_path,
+                to_path,  exc.error)
             raise error.ActionException(msg) from exc
-        msg = ("{0} '{1}' {2}was successfully copied from '{3}' as '{4}'.\n"
+        msg = ("{0} '{1}' {2}was successfully {3} from '{4}' as '{5}'.\n"
                "".format(self.get_entity_type(response.metadata).capitalize(),
                          os.path.basename(from_path),
                          'and all its content ' if self.is_folder(
                              response.metadata) else '',
+                         aliases[self.action_type][1],
                          from_path, response.metadata.path_display))
         self.stdout.write(msg)
+
+
+class FileFolderCopy(BaseFileFolderAction):
+    """
+    Copies a file or folder to a different location in the user’s Dropbox.
+
+    If the source path is a folder all its content will be copied.
+    If destination path doesn't exist it will be created.
+    """
+
+    action_type = 'copy'
+
+
+class FileFolderMove(BaseFileFolderAction):
+    """
+    Moves a file or folder to a different location in the user’s Dropbox.
+
+    If the source path is a folder all its content will be moved.
+    If destination path doesn't exist it will be created.
+    """
+
+    action_type = 'move'

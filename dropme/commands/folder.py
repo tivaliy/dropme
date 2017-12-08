@@ -26,13 +26,13 @@ class FolderList(base.BaseListCommand, base.FileFolderMixIn):
         parser.add_argument(
             'path',
             nargs='?',
-            help='the path of the directory for printing its content,'
-                 'defaults to the root'
+            help='The path of the directory for printing its content,'
+                 'defaults to the root.'
         )
         parser.add_argument(
             '-l', '--long-listing',
             action='store_true',
-            help='use a long listing format'
+            help='Use a long listing format.'
         )
         return parser
 
@@ -71,13 +71,13 @@ class FolderCreate(base.BaseCommand):
         parser = super(FolderCreate, self).get_parser(prog_name)
         parser.add_argument(
             'path',
-            help='the path of the folder to create'
+            help='The path of the folder to create.'
         )
         parser.add_argument(
             '-r', '--auto-rename',
             action='store_true',
-            help='whether the folder should be renamed '
-                 'if there is a name conflict'
+            help='Whether the folder should be renamed '
+                 'if there is a name conflict.'
         )
         return parser
 

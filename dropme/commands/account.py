@@ -26,7 +26,7 @@ class AccountOwnerInfoShow(BaseShowCommand):
             '-a',
             '--all',
             action='store_true',
-            help='show information about account in more details'
+            help='Show information about account in more details.'
         )
         return parser
 
