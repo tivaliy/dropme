@@ -111,6 +111,6 @@ Commands
 The list of available :command:`dropme` commands:
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    cli/index
