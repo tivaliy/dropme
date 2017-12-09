@@ -182,7 +182,7 @@ class FileGet(base.BaseCommand):
 
 class FileFolderStatusShow(base.BaseShowCommand, base.FileFolderMixIn):
     """
-    Shows status for a specified file or folder.
+    Shows status of a specified file or folder.
     """
     columns = ('name', 'type', 'path')
 
