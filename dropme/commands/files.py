@@ -15,7 +15,7 @@ from .. import error
 from ..common import utils
 
 
-class FileUpload(base.BaseCommand):
+class FilePut(base.BaseCommand):
     """
     Uploads a file to a specified directory.
 
@@ -68,7 +68,7 @@ class FileUpload(base.BaseCommand):
         return response
 
     def get_parser(self, prog_name):
-        parser = super(FileUpload, self).get_parser(prog_name)
+        parser = super(FilePut, self).get_parser(prog_name)
         parser.add_argument(
             'file',
             type=self._get_file_path,
@@ -133,13 +133,13 @@ class FileFolderDelete(base.BaseCommand, base.FileFolderMixIn):
         self.stdout.write(msg)
 
 
-class FileDownload(base.BaseCommand):
+class FileGet(base.BaseCommand):
     """
     Downloads a file at a given local path.
     """
 
     def get_parser(self, prog_name):
-        parser = super(FileDownload, self).get_parser(prog_name)
+        parser = super(FileGet, self).get_parser(prog_name)
         parser.add_argument(
             'path',
             metavar='DROPBOX_FILE',

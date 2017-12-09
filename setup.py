@@ -41,13 +41,13 @@ setup(
         'dropme': [
             'cp=dropme.commands.files:FileFolderCopy',
             'df=dropme.commands.account:AccountOwnerSpaceUsageShow',
-            'download=dropme.commands.files:FileDownload',
+            'get=dropme.commands.files:FileGet',
             'ls=dropme.commands.folder:FolderList',
             'mkdir=dropme.commands.folder:FolderCreate',
             'mv=dropme.commands.files:FileFolderMove',
+            'put=dropme.commands.files:FilePut',
             'rm=dropme.commands.files:FileFolderDelete',
             'status=dropme.commands.files:FileFolderStatusShow',
-            'upload=dropme.commands.files:FileUpload',
             'whoami=dropme.commands.account:AccountOwnerInfoShow'
         ],
     },

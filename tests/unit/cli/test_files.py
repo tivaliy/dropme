@@ -27,7 +27,7 @@ class TestFilesCommand(BaseCLITest):
     def test_file_upload_at_once(self, mock_client, mocker, tmpdir, dst_path,
                                  autorename):
         file_content = b'Some fake data to be send'
-        mocker.patch('dropme.commands.files.FileUpload.CHUNK_SIZE',
+        mocker.patch('dropme.commands.files.FilePut.CHUNK_SIZE',
                      new_callable=mocker.PropertyMock, return_value=1024)
         fake_file = tmpdir.join('fake_small_file.bin')
         fake_file.write(file_content)
@@ -37,7 +37,7 @@ class TestFilesCommand(BaseCLITest):
             path_display=dst_path if dst_path else '/' + fake_file.basename,
             size=file_size)
 
-        args = 'upload {0} {1} {2}'.format(
+        args = 'put {0} {1} {2}'.format(
             fake_file.strpath, dst_path, '--auto-rename' if autorename else '')
         self.exec_command(args)
 
@@ -49,7 +49,7 @@ class TestFilesCommand(BaseCLITest):
     def test_file_upload_in_parts_to_root(self, mock_client, mocker, tmpdir):
         chunk_size = 10
         file_content = b'Some fake data to be uploaded by chunks'
-        mocker.patch('dropme.commands.files.FileUpload.CHUNK_SIZE',
+        mocker.patch('dropme.commands.files.FilePut.CHUNK_SIZE',
                      new_callable=mocker.PropertyMock, return_value=chunk_size)
         fake_file = tmpdir.join('fake_large_file.bin')
         fake_file.write(file_content)
@@ -64,7 +64,7 @@ class TestFilesCommand(BaseCLITest):
                                        size=file_size)
         mock_client.files_upload_session_finish.return_value = fake_resp
 
-        args = 'upload {0}'.format(fake_file.strpath)
+        args = 'put {0}'.format(fake_file.strpath)
         self.exec_command(args)
 
         mock_client.files_upload_session_start.assert_called_once_with(
@@ -82,7 +82,7 @@ class TestFilesCommand(BaseCLITest):
         mocker.patch('dropme.commands.files.os.path.lexists',
                      return_value=False)
         fake_file = '/non/existing/file.path'
-        args = 'upload {0}'.format(fake_file)
+        args = 'put {0}'.format(fake_file)
         with pytest.raises(SystemExit):
             self.exec_command(args)
         out, err = capsys.readouterr()
@@ -91,7 +91,7 @@ class TestFilesCommand(BaseCLITest):
     def test_upload_file_insufficient_space_fail(self, mock_client, tmpdir):
         fake_file = tmpdir.join('fake_small_file.bin')
         fake_file.write('')
-        args = 'upload {0}'.format(fake_file)
+        args = 'put {0}'.format(fake_file)
         mock_client.files_upload.side_effect = exceptions.ApiError(
             request_id='ed9755c09d6f856ba81491ef2ec4a230',
             error=files.UploadError(
@@ -166,7 +166,7 @@ class TestFilesCommand(BaseCLITest):
                            response):
         cwd = '/foo/bar'
         mocker.patch('dropme.commands.files.os.getcwd', return_value=cwd)
-        args = 'download {0} {1} {2}'.format(
+        args = 'get {0} {1} {2}'.format(
             path, dst_path, '--revision {0}'.format(rev) if rev else '')
         path = path if path.startswith('/') else os.path.join('/', path)
         dst_path = dst_path if dst_path else os.path.join(
@@ -178,7 +178,7 @@ class TestFilesCommand(BaseCLITest):
 
     def test_download_w_non_specified_path_fail(self, mocker, capsys):
         mocker.patch('dropme.client.get_client')
-        args = 'download'
+        args = 'get'
         with pytest.raises(SystemExit):
             self.exec_command(args)
         out, err = capsys.readouterr()
@@ -195,7 +195,7 @@ class TestFilesCommand(BaseCLITest):
             user_message_locale='',
             user_message_text=''
         )
-        args = 'download {0} {1}'.format(path, dst_path)
+        args = 'get {0} {1}'.format(path, dst_path)
         with pytest.raises(error.ActionException) as excinfo:
             self.exec_command(args)
         mock_client.files_download_to_file.assert_called_once_with(dst_path,
