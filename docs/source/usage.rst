@@ -7,7 +7,7 @@ To get help on a specific :command:`dropme` command enter:
 
    $ dropme COMMAND --help
 
-All :command:`dropme` commands support several shared arguments:
+All :command:`dropme` commands support several global arguments:
 
 .. code-block:: console
 
