@@ -17,6 +17,16 @@ class DropboxClient(app.App):
 
     Initialization of the command manager and configuration of basic engines.
     """
+
+    def build_option_parser(self, description, version, argparse_kwargs=None):
+        option_parser = super(DropboxClient, self).build_option_parser(
+            description, version, argparse_kwargs=argparse_kwargs)
+        option_parser.add_argument(
+            '-t', '--token',
+            help='Dropbox token.'
+        )
+        return option_parser
+
     def run(self, argv):
         return super(DropboxClient, self).run(argv)
 

@@ -12,6 +12,7 @@ All :command:`dropme` commands support several global arguments:
 .. code-block:: console
 
     usage: dropme [--version] [-v | -q] [--log-file LOG_FILE] [-h] [--debug]
+                  [-t TOKEN]
 
     CLI tool for managing Dropbox environment.
 
@@ -22,6 +23,8 @@ All :command:`dropme` commands support several global arguments:
     --log-file LOG_FILE  Specify a file to log output. Disabled by default.
     -h, --help           Show help message and exit.
     --debug              Show tracebacks on errors.
+    -t TOKEN, --token TOKEN
+                         Dropbox token.
 
     Commands:
     complete       Prints bash completion command (cliff).
