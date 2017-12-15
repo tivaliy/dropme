@@ -17,7 +17,8 @@ class BaseCommand(command.Command):
 
     def __init__(self, *args, **kwargs):
         super(BaseCommand, self).__init__(*args, **kwargs)
-        self.client = client.get_client(self.app.options.token)
+        token = self.app.options.token if self.app else None
+        self.client = client.get_client(token=token)
 
     @property
     def stdout(self):
