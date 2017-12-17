@@ -41,6 +41,7 @@ setup(
         'dropme': [
             'cp=dropme.commands.files:FileFolderCopy',
             'df=dropme.commands.account:AccountOwnerSpaceUsageShow',
+            'find=dropme.commands.files:FileFolderSearch',
             'get=dropme.commands.files:FileGet',
             'ls=dropme.commands.folder:FolderList',
             'mkdir=dropme.commands.folder:FolderCreate',

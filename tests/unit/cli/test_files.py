@@ -367,3 +367,95 @@ class TestFilesCommand(BaseCLITest):
         out, err = capsys.readouterr()
         msg = "error: the following arguments are required: from_path, to_path"
         assert msg in err
+
+    @pytest.mark.parametrize(
+        'path, query, mode, max_results, start, response', [
+            ('', 'foo', 'filename', '', '', files.SearchResult(
+                matches=[files.SearchMatch(
+                    match_type=files.SearchMatchType('filename', None),
+                    metadata=files.FileMetadata(name='foo.txt',
+                                                id='id:2xfROqlP9QAAAAAAAAAAOA',
+                                                rev='5b5e0155e3', size=19,
+                                                path_display='/foo.txt'))],
+                more=False, start=1)),
+            ('/bar', 'foo', 'filename', '', '', files.SearchResult(
+                matches=[files.SearchMatch(
+                    match_type=files.SearchMatchType('filename', None),
+                    metadata=files.FileMetadata(name='foo.txt',
+                                                id='id:2xfROqlP9QAAAAAAAAAAOA',
+                                                rev='5b5e0155e3', size=19,
+                                                path_display='/bar/foo.txt'))],
+                more=False, start=1)),
+            ('/bar', 'foo', 'filename_and_content', '', '', files.SearchResult(
+                matches=[files.SearchMatch(
+                    match_type=files.SearchMatchType('filename', None),
+                    metadata=files.FileMetadata(name='foo.txt',
+                                                id='id:2xfROqlP9QAAAAAAAAAAOA',
+                                                rev='5b5e0155e3', size=19,
+                                                path_display='/bar/foo.txt'))],
+                more=True, start=5)),
+            ('/bar', 'foo', 'deleted_filename', '', 3, files.SearchResult(
+                matches=[files.SearchMatch(
+                    match_type=files.SearchMatchType('filename', None),
+                    metadata=files.DeletedMetadata(name='foo',
+                                                   path_display='/bar/foo'))],
+                more=False, start=1)),
+            ('', 'foo', 'filename', 2, 2, files.SearchResult(
+                matches=[files.SearchMatch(
+                    match_type=files.SearchMatchType('filename', None),
+                    metadata=files.FileMetadata(name='foo.txt',
+                                                id='id:2xfROqlP9QAAAAAAAAAAOF',
+                                                rev='5b5e0155e3', size=1945,
+                                                path_display='/bar/foo.txt')),
+                         files.SearchMatch(
+                    match_type=files.SearchMatchType('filename', None),
+                    metadata=files.FileMetadata(name='foo.bar.txt',
+                                                id='id:2xfROqlP9QAAAAAAAAAAOA',
+                                                rev='5a5a1233e4', size=6933,
+                                                path_display='/foo.bar.txt'))],
+                more=False, start=1))
+            ]
+    )
+    def test_find_file_or_folder(self, mock_client, path, query, mode,
+                                 max_results, start, response):
+        arguments = [
+            '--mode {0}'.format(mode) if mode else '',
+            '--max-results {0}'.format(max_results) if max_results else '',
+            '--start {0}'.format(start) if start else ''
+        ]
+        args = 'find {0} {1} {2}'.format(path, query, ' '.join(arguments))
+        mock_client.files_search.return_value = response
+        self.exec_command(args)
+        mock_client.files_search.assert_called_once_with(
+            path, query, mode=files.SearchMode(mode, None),
+            max_results=max_results if max_results else 100,
+            start=start if start else 0
+        )
+
+    def test_find_file_or_folder_non_existing_path_fail(self, mock_client):
+        path = '/non/existing/path'
+        query = 'foo_bar'
+        mock_client.files_search.side_effect = exceptions.ApiError(
+            request_id='ed9755c09d6f856ba81491ef2ec4a230',
+            error=files.SearchError('path',
+                                    files.LookupError('not_found', None)),
+            user_message_locale='',
+            user_message_text=''
+        )
+        args = 'find {0} {1}'.format(path, query)
+        with pytest.raises(error.ActionException) as excinfo:
+            self.exec_command(args)
+        mock_client.files_search.assert_called_once_with(
+            path, query, mode=files.SearchMode('filename', None),
+            max_results=100, start=0)
+        assert "find: cannot execute query '{0}' at '{1}': ".format(
+            query, path) in str(excinfo.value)
+
+    def test_find_file_or_folder_wo_specified_query_fail(self, mocker, capsys):
+        mocker.patch('dropme.client.get_client')
+        args = 'find'
+        with pytest.raises(SystemExit):
+            self.exec_command(args)
+        out, err = capsys.readouterr()
+        msg = "error: the following arguments are required: query"
+        assert msg in err

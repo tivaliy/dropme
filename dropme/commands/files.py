@@ -355,3 +355,90 @@ class FileFolderMove(BaseFileFolderAction):
     """
 
     action_type = 'move'
+
+
+class FileFolderSearch(base.BaseListCommand, base.FileFolderMixIn):
+    """
+    Searches for files and folders.
+
+    Note: Recent changes may not immediately be reflected in search results
+    due to a short delay in indexing.
+    """
+
+    columns = ('name', 'path')
+
+    def get_parser(self, prog_name):
+        parser = super(FileFolderSearch, self).get_parser(prog_name)
+        parser.add_argument(
+            'path',
+            nargs='?',
+            default='',
+            help='The path of the directory to make search in, '
+                 'defaults to the root.'
+        )
+        parser.add_argument(
+            'query',
+            help="The string to search for. The search string "
+                 "is split on spaces into multiple tokens. For file name "
+                 "searching, the last token is used for prefix matching "
+                 "(i.e. 'bat c' matches 'bat cave' but not 'batman car')."
+        )
+        parser.add_argument(
+            '--start',
+            type=int,
+            default=0,
+            help='The starting index within the search results '
+                 '(used for paging). Defaults to 0.'
+        )
+        parser.add_argument(
+            '--max-results',
+            type=int,
+            default=100,
+            help='The maximum number of search results to return. '
+                 'Defaults to 100.'
+        )
+        parser.add_argument(
+            '-m', '--mode',
+            choices=['filename', 'filename_and_content', 'deleted_filename'],
+            default='filename',
+            help='The search mode. Note that searching file content '
+                 'is only available for Dropbox Business accounts.'
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        path = parsed_args.path
+        if path:
+            path = utils.normalize_path(parsed_args.path)
+        try:
+            response = self.client.files_search(
+                path, parsed_args.query, start=parsed_args.start,
+                max_results=parsed_args.max_results,
+                mode=files.SearchMode(parsed_args.mode))
+        except exceptions.ApiError as exc:
+            msg = "find: cannot execute query '{0}' at '{1}': {2}.".format(
+                parsed_args.query, parsed_args.path, exc.error)
+            raise error.ActionException(msg) from exc
+        if parsed_args.mode == 'deleted_filename':
+            data = [{'name': item.metadata.name,
+                     'path': item.metadata.path_display,
+                     } for item in response.matches]
+        else:
+            self.columns = ('type', 'id', 'name', 'path', 'revision')
+            data = [
+                {'type': '-' if self.is_file(item.metadata) else 'd',
+                 'id': item.metadata.id,
+                 'name': item.metadata.name,
+                 'path': item.metadata.path_display,
+                 'revision': item.metadata.rev
+                    if self.is_file(item.metadata) else '-'
+                 } for item in response.matches
+            ]
+        data = utils.get_display_data_multi(self.columns, data)
+        # Display this information only if other results still exist.
+        # This will allow to not break output results for different formats
+        if response.more:
+            msg = '\nhas_more_results={0} start_page={1}\n'.format(
+                response.more, response.start)
+            self.stdout.write(msg)
+        return self.columns, data
