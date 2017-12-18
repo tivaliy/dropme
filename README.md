@@ -63,6 +63,7 @@ CLI tool to manage data in Dropbox workspace (based on official [dropbox-sdk-pyt
 ## How to Use
 
     usage: dropme [--version] [-v | -q] [--log-file LOG_FILE] [-h] [--debug]
+                  [-t TOKEN]
 
     CLI tool for managing Dropbox environment.
 
@@ -73,11 +74,14 @@ CLI tool to manage data in Dropbox workspace (based on official [dropbox-sdk-pyt
       --log-file LOG_FILE  Specify a file to log output. Disabled by default.
       -h, --help           Show help message and exit.
       --debug              Show tracebacks on errors.
+      -t TOKEN, --token TOKEN
+                           Dropbox token.
 
     Commands:
       complete       print bash completion command (cliff)
       cp             Copies a file or folder to a different location in the user’s Dropbox.
       df             Shows information about space usage of the current user's account.
+      find           Searches for files and folders.
       get            Downloads a file at a given local path.
       help           print detailed help for another command (cliff)
       ls             Lists directory content.
