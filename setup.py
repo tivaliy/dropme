@@ -23,7 +23,7 @@ classifiers = [
 
 setup(
     name='dropme',
-    version='0.0.1',
+    version='1.0.1',
     description='CLI tool for managing Dropbox environment.',
     long_description=long_description,
     url='https://github.com/tivaliy/dropme',

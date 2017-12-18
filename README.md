@@ -91,3 +91,9 @@ CLI tool to manage data in Dropbox workspace (based on official [dropbox-sdk-pyt
 ## Running the tests
 We use the [tox](https://tox.readthedocs.org/) package to run tests. To install, use `pip install tox`.
 Once installed, run `tox` from the root directory.
+
+## Links
+
+* Documentation: [http://dropme.readthedocs.io](http://dropme.readthedocs.io)
+* Source: [https://github.com/tivaliy/dropme](https://github.com/tivaliy/dropme)
+* Bugs: [https://github.com/tivaliy/dropme/issues](https://github.com/tivaliy/dropme/issues)

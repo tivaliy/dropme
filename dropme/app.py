@@ -3,6 +3,7 @@
 #
 
 import logging
+import pkg_resources
 import sys
 
 from cliff import app
@@ -21,7 +22,7 @@ class DropboxClient(app.App):
     def __init__(self):
         super(DropboxClient, self).__init__(
             description='CLI tool for managing Dropbox environment.',
-            version='0.0.1',
+            version=pkg_resources.require('dropme')[0].version,
             command_manager=CommandManager('dropme', convert_underscores=True),
             deferred_help=True
             )
