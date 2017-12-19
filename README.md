@@ -1,3 +1,4 @@
+[![PyPI](https://img.shields.io/pypi/v/dropme.svg)](https://pypi.python.org/pypi/dropme)
 [![Build Status](https://travis-ci.org/tivaliy/dropme.svg?branch=master)](https://travis-ci.org/tivaliy/dropme)
 [![codecov](https://codecov.io/gh/tivaliy/dropme/branch/master/graph/badge.svg)](https://codecov.io/gh/tivaliy/dropme)
 [![Documentation Status](https://readthedocs.org/projects/dropme/badge/?version=latest)](http://dropme.readthedocs.io/en/latest/?badge=latest)
