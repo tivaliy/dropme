@@ -459,3 +459,81 @@ class TestFilesCommand(BaseCLITest):
         out, err = capsys.readouterr()
         msg = "error: the following arguments are required: query"
         assert msg in err
+
+    @pytest.mark.parametrize('path, mode, limit, response', [
+        ('/foo/bar.txt', None, None,
+         files.ListRevisionsResult(is_deleted=False, entries=[
+             files.FileMetadata(
+                 name='bar.txt', id='id:2xfROqlP9QAAAAAAAAAYQ',
+                 client_modified=datetime(2017, 12, 20, 8, 12, 46),
+                 server_modified=datetime(2017, 12, 20, 8, 12, 47),
+                 rev='af5e0155e3', size=15, path_display='/foo/bar.txt'),
+             files.FileMetadata(
+                 name='bar.txt', id='id:2xfROqlP9QAAAAAAAAADQ',
+                 client_modified=datetime(2017, 11, 17, 12, 37, 55),
+                 server_modified=datetime(2017, 12, 20, 7, 24, 19),
+                 rev='a75e0155e3', size=19, path_display='/foo/bar.txt',)
+         ], server_deleted=None)),
+        ('/foo.txt', None, 1,
+         files.ListRevisionsResult(is_deleted=False, entries=[
+             files.FileMetadata(
+                 name='foo.txt', id='id:2xfROqlP9QAAAAAAAAAYQ',
+                 client_modified=datetime(2017, 12, 20, 8, 12, 46),
+                 server_modified=datetime(2017, 12, 20, 8, 12, 47),
+                 rev='af5e0155e3', size=3451, path_display='/foo.txt'),
+         ], server_deleted=None)),
+        ('/bar.txt', 'id', None,
+         files.ListRevisionsResult(is_deleted=False, entries=[
+             files.FileMetadata(
+                 name='foo.txt', id='id:2xfROqlP9QAAAAAAAAAYQ',
+                 client_modified=datetime(2017, 12, 20, 8, 12, 46),
+                 server_modified=datetime(2017, 12, 20, 8, 12, 47),
+                 rev='af5e0155e3', size=342, path_display='/bar.txt'),
+         ], server_deleted=None)),
+        ('bar.txt', 'id', 1,
+         files.ListRevisionsResult(is_deleted=True, entries=[
+             files.FileMetadata(
+                 name='foo.txt', id='id:2xfROqlP9QAAAAAAAAAYQ',
+                 client_modified=datetime(2017, 12, 20, 8, 12, 46),
+                 server_modified=datetime(2017, 12, 20, 8, 12, 47),
+                 rev='af5e0155e3', size=342, path_display='/bar.txt'),
+         ], server_deleted=datetime(2017, 12, 20, 8, 12, 54))),
+    ])
+    def test_show_file_revisions(self, mock_client, path,
+                                 mode, limit, response):
+        args = 'revs {0} {1} {2}'.format(
+            path,
+            '--mode {0}'.format(mode) if mode else '',
+            '--limit {0}'.format(limit) if limit else '')
+        mock_client.files_list_revisions.return_value = response
+        self.exec_command(args)
+        mode = files.ListRevisionsMode(mode if mode else 'path', None)
+        limit = limit if limit else 10
+        mock_client.files_list_revisions.assert_called_once_with(
+            utils.normalize_path(path), mode=mode, limit=limit)
+
+    def test_show_file_revisions_non_existing_path_fail(self, mock_client):
+        path = '/non/existing/path'
+        mock_client.files_list_revisions.side_effect = exceptions.ApiError(
+            request_id='ed9755c09d6f856ba81491ef2ec4a230',
+            error=files.ListRevisionsError(
+                'path', files.LookupError('not_found', None)),
+            user_message_locale='',
+            user_message_text=''
+        )
+        args = 'revs {0}'.format(path)
+        with pytest.raises(error.ActionException) as excinfo:
+            self.exec_command(args)
+        mock_client.files_list_revisions.assert_called_once_with(
+            path, mode=files.ListRevisionsMode('path', None), limit=10)
+        assert "revs: cannot fetch revisions for '{0}' at '{1}': ".format(
+            os.path.basename(path), path) in str(excinfo.value)
+
+    def test_show_file_revisions_wo_specified_paths_fail(self, mocker, capsys):
+        mocker.patch('dropme.client.get_client')
+        args = 'revs'
+        with pytest.raises(SystemExit):
+            self.exec_command(args)
+        out, err = capsys.readouterr()
+        msg = "error: the following arguments are required: path"
+        assert msg in err

@@ -442,3 +442,64 @@ class FileFolderSearch(base.BaseListCommand, base.FileFolderMixIn):
                 response.more, response.start)
             self.stdout.write(msg)
         return self.columns, data
+
+
+class FileRevisionsList(base.BaseListCommand):
+    """
+    Lists file revisions.
+    """
+
+    columns = ('id', 'revision', 'name', 'path', 'size', 'server_modified',
+               'client_modified')
+
+    def get_parser(self, prog_name):
+        parser = super(FileRevisionsList, self).get_parser(prog_name)
+        parser.add_argument(
+            'path',
+            help='The path to the file to get the revisions of.'
+        )
+        parser.add_argument(
+            '-m', '--mode',
+            choices=['path', 'id'],
+            default='path',
+            help="The revisions for a given file path or id. Defaults to "
+                 "'path'. Note, that in the 'path' mode, all revisions at the "
+                 "same file path as the latest file entry are returned. "
+                 "If revisions with the same file id are desired, then mode "
+                 "must be set to 'id' (useful to retrieve revisions for a "
+                 "given file across moves or renames)."
+        )
+        parser.add_argument(
+            '-l', '--limit',
+            type=int,
+            default=10,
+            help='The maximum number of revision entries returned. '
+                 'Defaults to 10.'
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        path = utils.normalize_path(parsed_args.path)
+        mode = files.ListRevisionsMode(parsed_args.mode, None)
+        try:
+            response = self.client.files_list_revisions(
+                path, mode=mode, limit=parsed_args.limit)
+        except exceptions.ApiError as exc:
+            msg = ("revs: cannot fetch revisions for '{0}' at '{1}': "
+                   "{2}.".format(os.path.basename(parsed_args.path),
+                                 path, exc.error))
+            raise error.ActionException(msg) from exc
+        data = [{'id': item.id,
+                 'revision': item.rev,
+                 'name': item.name,
+                 'path': item.path_display,
+                 'size': utils.convert_size(item.size),
+                 'server_modified': item.server_modified.isoformat(' '),
+                 'client_modified': item.client_modified.isoformat(' ')
+                 } for item in response.entries]
+        if response.is_deleted:
+            msg = '\nis_deleted={0} server_deleted={1}\n'.format(
+                response.is_deleted, response.server_deleted)
+            self.stdout.write(msg)
+        data = utils.get_display_data_multi(self.columns, data)
+        return self.columns, data

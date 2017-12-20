@@ -89,6 +89,7 @@ CLI tool to manage data in Dropbox workspace (based on official [dropbox-sdk-pyt
       mkdir          Creates a folder at a given path.
       mv             Moves a file or folder to a different location in the user’s Dropbox.
       put            Uploads a file to a specified directory.
+      revs           Lists file revisions.
       rm             Deletes a file or a folder at a given path.
       status         Shows status of a specified file or folder.
       whoami         Shows information about the current user's account.

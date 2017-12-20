@@ -47,6 +47,7 @@ setup(
             'mkdir=dropme.commands.folder:FolderCreate',
             'mv=dropme.commands.files:FileFolderMove',
             'put=dropme.commands.files:FilePut',
+            'revs=dropme.commands.files:FileRevisionsList',
             'rm=dropme.commands.files:FileFolderDelete',
             'status=dropme.commands.files:FileFolderStatusShow',
             'whoami=dropme.commands.account:AccountOwnerInfoShow'
