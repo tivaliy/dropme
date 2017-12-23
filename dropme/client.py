@@ -11,7 +11,9 @@ from .common import utils
 
 
 def get_client(token=None):
-    token = token or get_settings().get('token')
+    token = (token or
+             os.environ.get('DBX_AUTH_TOKEN') or
+             get_settings().get('token'))
     if not token:
         raise ValueError("Token not found.")
     return dropbox.Dropbox(token)

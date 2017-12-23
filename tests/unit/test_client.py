@@ -2,8 +2,9 @@
 #    Copyright 2017 Vitalii Kulanov
 #
 
-import pytest
+import os
 
+import pytest
 import yaml
 
 from dropme import client
@@ -14,6 +15,14 @@ def test_get_client_w_token(mocker):
     token = '4145225aaFKL0dDlKY0323bcc8c37'
     m_dropbox = mocker.patch('dropme.client.dropbox.Dropbox')
     client.get_client(token=token)
+    m_dropbox.assert_called_once_with(token)
+
+
+def test_get_client_w_token_from_environment_variable(mocker, monkeypatch):
+    token = '4145225aaFKL0dDlKY0323bcc8c37'
+    monkeypatch.setitem(os.environ, 'DBX_AUTH_TOKEN', token)
+    m_dropbox = mocker.patch('dropme.client.dropbox.Dropbox')
+    client.get_client()
     m_dropbox.assert_called_once_with(token)
 
 
