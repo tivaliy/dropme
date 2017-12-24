@@ -200,7 +200,7 @@ class FileFolderStatusShow(base.BaseShowCommand, base.FileFolderMixIn):
         parser.add_argument(
             '-d', '--include-deleted',
             action='store_true',
-            help='Fetch data for deleted file sor folder.'
+            help='Fetch data for deleted file or folder.'
         )
         parser.add_argument(
             '-m', '--include-has-members',
@@ -224,15 +224,15 @@ class FileFolderStatusShow(base.BaseShowCommand, base.FileFolderMixIn):
                 path, exc.error if hasattr(exc, 'error') else exc.message)
             raise error.ActionException(msg) from exc
         data = {'name': response.name,
-                'path': response.path_display}
+                'path': response.path_display,
+                'type': self.get_entity_type(response)}
         # TODO vkulanov Add more output results
         if self.is_file(response):
             self.columns += ('size', 'client_modified', 'server_modified',
                              'revision', 'parent_shared_folder_id',
                              'has_explicit_shared_members', 'content_hash')
             data.update(
-                {'type': 'file',
-                 'size': utils.convert_size(response.size),
+                {'size': utils.convert_size(response.size),
                  'client_modified': response.client_modified.isoformat(' '),
                  'server_modified': response.server_modified.isoformat(' '),
                  'revision': response.rev,
@@ -250,14 +250,16 @@ class FileFolderStatusShow(base.BaseShowCommand, base.FileFolderMixIn):
                     self.columns += ('duration',)
                     data['duration'] = datetime.timedelta(
                         milliseconds=metadata.duration)
-        else:
+        elif self.is_folder(response):
             self.columns += ('shared_folder_id', 'parent_shared_folder_id',
                              'property_groups')
             data.update(
-                {'type': 'directory',
-                 'shared_folder_id': response.shared_folder_id,
+                {'shared_folder_id': response.shared_folder_id,
                  'parent_shared_folder_id': response.parent_shared_folder_id,
                  'property_groups': response.property_groups})
+        else:  # files.DeletedMetadata
+            self.columns += ('parent_shared_folder_id',)
+            data['parent_shared_folder_id'] = response.parent_shared_folder_id
         data = utils.get_display_data_single(self.columns, data)
         return self.columns, data
 

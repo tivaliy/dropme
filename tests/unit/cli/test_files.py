@@ -221,7 +221,10 @@ class TestFilesCommand(BaseCLITest):
                  files.Dimensions(768, 1024), duration=3123451,
                  time_taken=datetime(2016, 10, 17, 10, 10, 54))))),
          ('/foo/bar/folder', True, True, True, files.FolderMetadata(
-            name='folder', path_display='/foo/bar/folder'))])
+            name='folder', path_display='/foo/bar/folder')),
+         ('/some/deleted.file', False, True, False, files.DeletedMetadata(
+            name='deleted.file', path_display='some/deleted.file',
+            parent_shared_folder_id=None))])
     def test_show_status_for_file_or_folder(
             self, mock_client, path, include_media_info, include_deleted,
             include_has_members, response):

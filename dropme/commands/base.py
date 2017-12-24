@@ -70,10 +70,11 @@ class FileFolderMixIn(object):
         """Returns the type of metadata object
 
         :param metadata: Metadata of the object
-        :return: 'file'|'folder'
+        :return: 'file'|'folder'|'deleted'
         """
         type_mapper = {'file': isinstance(metadata, files.FileMetadata),
-                       'folder': isinstance(metadata, files.FolderMetadata)}
+                       'folder': isinstance(metadata, files.FolderMetadata),
+                       'deleted': isinstance(metadata, files.DeletedMetadata)}
         return next(k for k, v in type_mapper.items() if v)
 
     @staticmethod
