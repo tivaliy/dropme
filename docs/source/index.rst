@@ -20,6 +20,23 @@ User Documentation
    usage
    commands
 
+Release Notes
+-------------
+
+1.1.0
+`````
+
+Released on Dec 25, 2017.
+
+* New ``dropme revs`` command
+* New ``dropme restore`` command
+* Bug fixes
+
+1.0.1
+`````
+
+Released on Dec 18, 2017.
+
 Links
 _____
 

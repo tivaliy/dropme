@@ -23,7 +23,7 @@ classifiers = [
 
 setup(
     name='dropme',
-    version='1.0.1',
+    version='1.1.0',
     install_requires=[
         'cliff>=2.9.0',
         'dropbox>=8.5.0',
