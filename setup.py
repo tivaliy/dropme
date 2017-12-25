@@ -9,7 +9,7 @@ with io.open(os.path.join(here, 'README.md'), 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 classifiers = [
-    'Development Status :: 1 - Planning',
+    'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
     'Intended Audience :: Information Technology',
     'License :: OSI Approved :: MIT License',
@@ -24,6 +24,11 @@ classifiers = [
 setup(
     name='dropme',
     version='1.0.1',
+    install_requires=[
+        'cliff>=2.9.0',
+        'dropbox>=8.5.0',
+        'PyYAML>=3.1.0',
+    ],
     description='CLI tool for managing Dropbox environment.',
     long_description=long_description,
     url='https://github.com/tivaliy/dropme',
