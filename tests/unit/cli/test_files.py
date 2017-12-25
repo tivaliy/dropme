@@ -540,3 +540,37 @@ class TestFilesCommand(BaseCLITest):
         out, err = capsys.readouterr()
         msg = "error: the following arguments are required: path"
         assert msg in err
+
+    def test_restore_file_revision(self, mock_client):
+        path = '/foo/bar.file'
+        revision = 'b45e0155e3'
+        args = 'restore {0} --revision {1}'.format(path, revision)
+        mock_client.files_restore.return_value = files.FileMetadata(
+            name=os.path.basename(path), rev=revision, path_display=path)
+        self.exec_command(args)
+        mock_client.files_restore.assert_called_once_with(path, revision)
+
+    def test_restore_file_w_non_existing_revision_fail(self, mock_client):
+        path = '/foo/bar.file'
+        revision = 'b25e0155e1'
+        mock_client.files_restore.side_effect = exceptions.ApiError(
+            request_id='ed9755c09d6f856ba81491ef2ec4a230',
+            error=files.RestoreError('invalid_revision', None),
+            user_message_locale='',
+            user_message_text=''
+        )
+        args = 'restore {0} --revision {1}'.format(path, revision)
+        with pytest.raises(error.ActionException) as excinfo:
+            self.exec_command(args)
+        mock_client.files_restore.assert_called_once_with(path, revision)
+        assert "restore: cannot restore '{0}' file".format(
+            os.path.basename(path)) in str(excinfo.value)
+
+    def test_restore_file_wo_specified_arguments_fail(self, mocker, capsys):
+        mocker.patch('dropme.client.get_client')
+        args = 'restore'
+        with pytest.raises(SystemExit):
+            self.exec_command(args)
+        out, err = capsys.readouterr()
+        m = "error: the following arguments are required: path, -r/--revision"
+        assert m in err

@@ -505,3 +505,37 @@ class FileRevisionsList(base.BaseListCommand):
             self.stdout.write(msg)
         data = utils.get_display_data_multi(self.columns, data)
         return self.columns, data
+
+
+class FileRestore(base.BaseCommand):
+    """
+    Restores file to a specified revision.
+    """
+
+    def get_parser(self, prog_name):
+        parser = super(FileRestore, self).get_parser(prog_name)
+        parser.add_argument(
+            'path',
+            help='The path to the file to restore.'
+        )
+        parser.add_argument(
+            '-r', '--revision',
+            required=True,
+            help='File revision.'
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        path = utils.normalize_path(parsed_args.path)
+        try:
+            response = self.client.files_restore(path, parsed_args.revision)
+        except exceptions.ApiError as exc:
+            msg = ("restore: cannot restore '{0}' file as '{1}' to the "
+                   "revision '{2}': {3}.".format(os.path.basename(path), path,
+                                                 parsed_args.revision,
+                                                 exc.error))
+            raise error.ActionException(msg) from exc
+        msg = ("File '{0}' with revision '{1}' was successfully restored as "
+               "'{2}'\n.".format(response.name, response.rev,
+                                 response.path_display))
+        self.stdout.write(msg)
