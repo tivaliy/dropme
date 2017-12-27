@@ -7,21 +7,38 @@
 CLI tool to manage data in Dropbox workspace (based on official [dropbox-sdk-python](https://github.com/dropbox/dropbox-sdk-python))
 
 ## Quick Start
-1. Clone `dropme` repository: `git clone https://github.com/tivaliy/dropme.git`.
-2. Configure `settings.yaml` file (in `dropme/settings.yaml`).
+1. Install `dropme`:
 
-    ```
-    token: "YOUR_DROPBOX_ACCESS_TOKEN"
-    ```
+    * from GitHub (latest):
 
-3. Create isolated Python environment `virtualenv venv` and activate it `source venv/bin/activate`.
-4. Install `dropme` with all necessary dependencies: `pip install -r requirements.txt .`.
-5. (Optional) Add `dropme` command bash completion:
+        - Clone `dropme` repository: `git clone https://github.com/tivaliy/dropme.git`.
+        - Configure `settings.yaml` file (in `dropme/settings.yaml`).
+
+            ```
+            token: "YOUR_DROPBOX_ACCESS_TOKEN"
+            ```
+
+        - Create isolated Python environment `virtualenv venv` and activate it `source venv/bin/activate`.
+        - Install `dropme` with all necessary dependencies: `pip install -r requirements.txt .`
+
+    * from PyPI (stable)
+
+        - Create isolated Python environment `virtualenv venv` and activate it `source venv/bin/activate`.
+        - Install `dropme` with `pip`: `pip install dropme`
+
+2. Specify Dropbox access token (according to the search order):
+
+    * as an argument of a command `dropme ls -l --token YOUR_DROPBOX_ACCESS_TOKEN`
+    * as an environment variable `export DBX_AUTH_TOKEN=YOUR_DROPBOX_ACCESS_TOKEN`
+    * in `~/.config/dropme/settings.yaml` file
+    * in `dropme/settings.yaml` file
+
+3. (Optional) Add `dropme` command bash completion:
 
     `dropme complete | sudo tee /etc/bash_completion.d/gc.bash_completion > /dev/null`
 
     Restart terminal and activate virtual environment once again.
-6. Run `dropme`:
+4. Run `dropme`:
 
     * as a standalone application
 
@@ -76,7 +93,7 @@ CLI tool to manage data in Dropbox workspace (based on official [dropbox-sdk-pyt
       -h, --help           Show help message and exit.
       --debug              Show tracebacks on errors.
       -t TOKEN, --token TOKEN
-                           Dropbox token.
+                           Dropbox access token.
 
     Commands:
       complete       print bash completion command (cliff)

@@ -32,7 +32,7 @@ class DropboxClient(app.App):
             description, version, argparse_kwargs=argparse_kwargs)
         option_parser.add_argument(
             '-t', '--token',
-            help='Dropbox token.'
+            help='Dropbox access token.'
         )
         return option_parser
 

@@ -38,7 +38,7 @@ Released on Dec 25, 2017.
 Released on Dec 18, 2017.
 
 Links
-_____
+-----
 
 * Documentation: `http://dropme.readthedocs.io <http://dropme.readthedocs.io>`_
 * Source: `https://github.com/tivaliy/dropme <https://github.com/tivaliy/dropme>`_

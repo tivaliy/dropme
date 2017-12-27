@@ -39,10 +39,10 @@ def get_settings(file_path=None):
     if file_path is not None:
         config_path = file_path
     else:
-        if os.path.isfile(local_config):
-            config_path = local_config
-        elif os.path.isfile(user_config):
+        if os.path.isfile(user_config):
             config_path = user_config
+        elif os.path.isfile(local_config):
+            config_path = local_config
 
     if config_path is None:
         raise error.ConfigNotFoundException("Configuration 'settings.yaml' "
