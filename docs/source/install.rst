@@ -36,13 +36,25 @@ How to install
 Configuring
 ===========
 
+Command Bash Completion
+-----------------------
+
 To add ``dropme`` command bash completion:
 
     ``dropme complete | sudo tee /etc/bash_completion.d/gc.bash_completion > /dev/null``
 
 Restart terminal and activate virtual environment once again.
 
-There are several ways oh now to specify Dropbox access token (according to the search order):
+Dropbox Access Token
+--------------------
+
+To use the ``dropme`` client, you'll need to register a new app in the
+`App Console <https://www.dropbox.com/developers/apps>`_.
+Select Dropbox API app and choose your app's permission. You'll need to use the app key created
+with this app to access API v2. You have also to `generate an access token <https://blogs.dropbox.com/developers/2014/05/generate-an-access-token-for-your-own-account/>`_
+for your own account through the `App Console <https://www.dropbox.com/developers/apps>`_.
+
+There are several ways to specify Dropbox access token in ``dropme`` (the order of search matters):
 
 - as an argument of a command:
 

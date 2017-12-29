@@ -16,7 +16,6 @@ User Documentation
    :maxdepth: 2
 
    install
-   quick_start
    usage
    commands
 
