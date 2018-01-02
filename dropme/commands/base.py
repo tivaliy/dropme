@@ -46,6 +46,7 @@ class BaseListCommand(lister.Lister, BaseCommand):
     def get_parser(self, prog_name):
         parser = super(BaseListCommand, self).get_parser(prog_name)
 
+        # TODO(vkulanov) Remove this section after the next 'cliff' release
         # Add sorting key argument to the 'output formatters' group
         # (if exists), otherwise add it to the general group
         matching_groups = (group for group in parser._action_groups
