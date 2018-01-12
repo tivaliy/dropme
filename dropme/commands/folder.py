@@ -26,8 +26,8 @@ class FolderList(base.BaseListCommand, base.FileFolderMixIn):
         parser.add_argument(
             'path',
             nargs='?',
-            help='The path of the directory for printing its content,'
-                 'defaults to the root.'
+            help='The path of the directory for printing its content. '
+                 'Defaults to the root.'
         )
         parser.add_argument(
             '-l', '--long-listing',
@@ -57,8 +57,7 @@ class FolderList(base.BaseListCommand, base.FileFolderMixIn):
         else:
             data = [{'name': self._get_entry_name_by_type(entry)}
                     for entry in response.entries]
-        data = utils.get_display_data_multi(self.columns, data,
-                                            sort_by=parsed_args.sort_columns)
+        data = utils.get_display_data_multi(self.columns, data)
         return self.columns, data
 
 

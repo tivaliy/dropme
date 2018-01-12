@@ -25,7 +25,7 @@ setup(
     name='dropme',
     version='1.1.0',
     install_requires=[
-        'cliff>=2.9.0',
+        'cliff>=2.10.0',
         'dropbox>=8.5.0',
         'PyYAML>=3.1.0',
     ],

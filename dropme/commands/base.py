@@ -32,7 +32,7 @@ class BaseShowCommand(show.ShowOne, BaseCommand):
     @property
     @abc.abstractmethod
     def columns(self):
-        """Names of columns in the resulting table."""
+        """Names of columns in the resulting table as a tuple."""
 
 
 class BaseListCommand(lister.Lister, BaseCommand):
@@ -42,25 +42,6 @@ class BaseListCommand(lister.Lister, BaseCommand):
     @abc.abstractmethod
     def columns(self):
         """Names of columns in the resulting table as a tuple."""
-
-    def get_parser(self, prog_name):
-        parser = super(BaseListCommand, self).get_parser(prog_name)
-
-        # TODO(vkulanov) Remove this section after the next 'cliff' release
-        # Add sorting key argument to the 'output formatters' group
-        # (if exists), otherwise add it to the general group
-        matching_groups = (group for group in parser._action_groups
-                           if group.title == 'output formatters')
-
-        group = next(matching_groups, None) or parser
-
-        group.add_argument(
-            '-s', '--sort-columns',
-            nargs='+',
-            metavar='SORT_COLUMN',
-            help="Space separated list of keys for sorting the data. "
-                 " Wrong values are ignored.")
-        return parser
 
 
 class FileFolderMixIn(object):
