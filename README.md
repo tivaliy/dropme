@@ -4,9 +4,11 @@
 [![Documentation Status](https://readthedocs.org/projects/dropme/badge/?version=latest)](http://dropme.readthedocs.io/en/latest/?badge=latest)
 
 # dropme
+
 CLI tool to manage data in Dropbox workspace (based on official [dropbox-sdk-python](https://github.com/dropbox/dropbox-sdk-python))
 
 ## Quick Start
+
 1. Install `dropme`:
 
     * from GitHub (latest):
@@ -14,9 +16,7 @@ CLI tool to manage data in Dropbox workspace (based on official [dropbox-sdk-pyt
         - Clone `dropme` repository: `git clone https://github.com/tivaliy/dropme.git`.
         - Configure `settings.yaml` file (in `dropme/settings.yaml`).
 
-            ```
             token: "YOUR_DROPBOX_ACCESS_TOKEN"
-            ```
 
         - Create isolated Python environment `virtualenv venv` and activate it `source venv/bin/activate`.
         - Install `dropme` with all necessary dependencies: `pip install -r requirements.txt .`
@@ -38,11 +38,12 @@ CLI tool to manage data in Dropbox workspace (based on official [dropbox-sdk-pyt
     `dropme complete | sudo tee /etc/bash_completion.d/gc.bash_completion > /dev/null`
 
     Restart terminal and activate virtual environment once again.
+
 4. Run `dropme`:
 
     * as a standalone application
 
-        ```
+        ```bash
         $ dropme
         (dropme) whoami
         +--------------+------------------------+
@@ -67,7 +68,7 @@ CLI tool to manage data in Dropbox workspace (based on official [dropbox-sdk-pyt
 
     * as a command with respective sub-command arguments
 
-        ```
+        ```bash
         $ dropme df
         +-----------+-----------------+
         | Field     | Value           |
@@ -118,6 +119,6 @@ Once installed, run `tox` from the root directory.
 
 ## Links
 
-* Documentation: [http://dropme.readthedocs.io](http://dropme.readthedocs.io)
-* Source: [https://github.com/tivaliy/dropme](https://github.com/tivaliy/dropme)
-* Bugs: [https://github.com/tivaliy/dropme/issues](https://github.com/tivaliy/dropme/issues)
+* Documentation: http://dropme.readthedocs.io
+* Source: https://github.com/tivaliy/dropme
+* Bugs: https://github.com/tivaliy/dropme/issues
