@@ -6,6 +6,7 @@
 
 .cache
 .coverage
+.pytest_cache
 
 docs/build
 /dist

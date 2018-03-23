@@ -7,6 +7,8 @@ import argparse
 import datetime
 import os
 
+from tqdm import tqdm
+
 from dropbox import exceptions
 from dropbox import files
 
@@ -22,8 +24,8 @@ class FilePut(base.BaseCommand):
     If destination directory path doesn't exist it will be created.
     """
 
-    # Upload 32 MB of file contents per request
-    CHUNK_SIZE = 32 * 1024 * 1024
+    # Upload 10 MB of file contents per request
+    CHUNK_SIZE = 10 * 1024 * 1024
 
     @staticmethod
     def _get_file_path(file_path):
@@ -41,6 +43,9 @@ class FilePut(base.BaseCommand):
     def upload_file(self, file_src, file_dst, autorename=False):
         file_size = os.path.getsize(file_src)
         response = None
+        pb = tqdm(total=file_size, unit="B", unit_scale=True,
+                  desc=os.path.basename(file_src), miniters=1,
+                  ncols=80, mininterval=1)
         try:
             with open(file_src, 'rb') as f:
                 if file_size <= self.CHUNK_SIZE:
@@ -54,7 +59,9 @@ class FilePut(base.BaseCommand):
                     commit = files.CommitInfo(path=file_dst,
                                               autorename=autorename)
                     while f.tell() < file_size:
+                        pb.update(self.CHUNK_SIZE)
                         if file_size - f.tell() <= self.CHUNK_SIZE:
+                            pb.update(file_size - f.tell())
                             response = self.client.files_upload_session_finish(
                                 f.read(self.CHUNK_SIZE), cursor, commit)
                         else:
@@ -65,6 +72,8 @@ class FilePut(base.BaseCommand):
             msg = "An error occurred while uploading '{0}': {1}.".format(
                 file_src, exc.error.get_path().reason)
             raise error.ActionException(msg) from exc
+        finally:
+            pb.close()
         return response
 
     def get_parser(self, prog_name):
