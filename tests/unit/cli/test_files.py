@@ -24,11 +24,9 @@ class TestFilesCommand(BaseCLITest):
         ('', False),
         ('/some/fake/path/fake_small_file.bin', True)
     ])
-    def test_file_upload_at_once(self, mock_client, mocker, tmpdir, dst_path,
+    def test_file_upload_at_once(self, mock_client, tmpdir, dst_path,
                                  autorename):
         file_content = b'Some fake data to be send'
-        mocker.patch('dropme.commands.files.FilePut.CHUNK_SIZE',
-                     new_callable=mocker.PropertyMock, return_value=1024)
         fake_file = tmpdir.join('fake_small_file.bin')
         fake_file.write(file_content)
         file_size = os.path.getsize(fake_file.strpath)
@@ -49,8 +47,8 @@ class TestFilesCommand(BaseCLITest):
     def test_file_upload_in_parts_to_root(self, mock_client, mocker, tmpdir):
         chunk_size = 10
         file_content = b'Some fake data to be uploaded by chunks'
-        mocker.patch('dropme.commands.files.FilePut.CHUNK_SIZE',
-                     new_callable=mocker.PropertyMock, return_value=chunk_size)
+        mocker.patch('dropme.commands.files.utils.to_megabytes',
+                     return_value=chunk_size)
         fake_file = tmpdir.join('fake_large_file.bin')
         fake_file.write(file_content)
         file_size = os.path.getsize(fake_file.strpath)
@@ -64,7 +62,7 @@ class TestFilesCommand(BaseCLITest):
                                        size=file_size)
         mock_client.files_upload_session_finish.return_value = fake_resp
 
-        args = 'put {0}'.format(fake_file.strpath)
+        args = 'put {0} --chunk-size {1}'.format(fake_file.strpath, chunk_size)
         self.exec_command(args)
 
         mock_client.files_upload_session_start.assert_called_once_with(

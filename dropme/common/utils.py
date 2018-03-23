@@ -68,6 +68,13 @@ def convert_size(size_bytes):
     return "{} {}".format(s, size_name[i])
 
 
+def to_megabytes(size_bytes):
+    """
+    Convert size in bytes to megabytes
+    """
+    return size_bytes * 1024 * 1024
+
+
 def normalize_path(path):
     """
     Normalize a pathname by adding leading slash

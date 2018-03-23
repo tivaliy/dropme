@@ -24,9 +24,6 @@ class FilePut(base.BaseCommand):
     If destination directory path doesn't exist it will be created.
     """
 
-    # Upload 10 MB of file contents per request
-    CHUNK_SIZE = 10 * 1024 * 1024
-
     @staticmethod
     def _get_file_path(file_path):
         if not os.path.lexists(file_path):
@@ -40,7 +37,7 @@ class FilePut(base.BaseCommand):
             return os.path.join('/', os.path.basename(src_path))
         return utils.normalize_path(dst_path)
 
-    def upload_file(self, file_src, file_dst, autorename=False):
+    def upload_file(self, file_src, file_dst, chunk_size, autorename=False):
         file_size = os.path.getsize(file_src)
         response = None
         pb = tqdm(total=file_size, unit="B", unit_scale=True,
@@ -48,25 +45,25 @@ class FilePut(base.BaseCommand):
                   ncols=80, mininterval=1)
         try:
             with open(file_src, 'rb') as f:
-                if file_size <= self.CHUNK_SIZE:
+                if file_size <= chunk_size:
                     response = self.client.files_upload(f.read(), file_dst,
                                                         autorename=autorename)
                 else:
                     session_start = self.client.files_upload_session_start(
-                        f.read(self.CHUNK_SIZE))
+                        f.read(chunk_size))
                     cursor = files.UploadSessionCursor(
                         session_id=session_start.session_id, offset=f.tell())
                     commit = files.CommitInfo(path=file_dst,
                                               autorename=autorename)
                     while f.tell() < file_size:
-                        pb.update(self.CHUNK_SIZE)
-                        if file_size - f.tell() <= self.CHUNK_SIZE:
+                        pb.update(chunk_size)
+                        if file_size - f.tell() <= chunk_size:
                             pb.update(file_size - f.tell())
                             response = self.client.files_upload_session_finish(
-                                f.read(self.CHUNK_SIZE), cursor, commit)
+                                f.read(chunk_size), cursor, commit)
                         else:
                             self.client.files_upload_session_append_v2(
-                                f.read(self.CHUNK_SIZE), cursor)
+                                f.read(chunk_size), cursor)
                             cursor.offset = f.tell()
         except exceptions.ApiError as exc:
             msg = "An error occurred while uploading '{0}': {1}.".format(
@@ -95,15 +92,25 @@ class FilePut(base.BaseCommand):
             help='Whether the file should be renamed '
                  'if there is a name conflict.'
         )
+        parser.add_argument(
+            '--chunk-size',
+            type=int,
+            default=10,
+            help='Chunk size of a file content to be uploaded per request '
+                 'in megabytes. Defaults to 10 MB. Note: A single request '
+                 'should not upload more than 150 MB.'
+        )
         return parser
 
     def take_action(self, parsed_args):
+        chunk_size = utils.to_megabytes(parsed_args.chunk_size)
         dst_path = self._build_destination_path(parsed_args.file,
                                                 parsed_args.path)
         self.stdout.write("Uploading '{0}' file to Dropbox as '{1}'"
                           "\n".format(parsed_args.file, dst_path))
         response = self.upload_file(parsed_args.file, dst_path,
-                                    parsed_args.auto_rename)
+                                    autorename=parsed_args.auto_rename,
+                                    chunk_size=chunk_size)
         msg = ("File '{0}' ({1}) was successfully uploaded to Dropbox "
                "as '{2}'\n".format(parsed_args.file,
                                    utils.convert_size(response.size),
